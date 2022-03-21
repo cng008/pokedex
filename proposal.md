@@ -2,7 +2,7 @@
 
 ## Overview
 
-The number of Pokémon GO players has been steady since its launch in 2016 with almost 2 million daily active loyal users. The purpose of this app is to let players easily find out more information about pokémon types, moves, and statistics to optimize their gaming experience.
+The number of Pokémon GO players has been steady since its launch in 2016 with [almost 2 million daily active loyal users](https://www.statista.com/statistics/604551/pokemon-go-daily-active-users-in-europe/). The purpose of this app is to let players easily find out more information about pokémon types, moves, and statistics to optimize their gaming experience.
 
 The user demographic will include:
 
@@ -12,9 +12,12 @@ The user demographic will include:
 
 ## Data Sources
 
-The main source of the data will be provided by the PokeApi which contains information about all the Pokémon that have ever existed, and this fan-created Pokémon Go API which contains only the Pokémon that exist in the mobile app version of the game.
+The main source of the data will be provided by the [PokeApi](https://pokeapi.co) which contains information about all the Pokémon that have ever existed, and this fan-created [Pokémon Go API](https://rapidapi.com/Chewett/api/pokemon-go1/details) which contains only the Pokémon that exist in the mobile app version of the game.
 
 ## Database Schema
+
+<img src="images/schema.png" alt="drawing" width="500"/>
+<!-- ![db schema](images/schema.png) -->
 
 ```py
 class User(db.Model):
@@ -23,18 +26,24 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(254), nullable=False, unique=True)
-    password = db.Column(db.Text, nullable=False)
     username = db.Column(db.String(50), nullable=True, unique=True)
-
-    favorites = db.relationship('Favorite', backref='user', cascade="all, delete-orphan")
+    password = db.Column(db.Text, nullable=False)
+    location = db.Column(db.Text)
+    account_creation = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
 
 class Favorite(db.Model):
 “””Favorites for user.”””
-**tablename** = “users”
+**tablename** = “favorites”
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'))
+    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id', ondelete='cascade'))
+
+class Pokemon(db.Model):
+“””Pokemon.”””
+**tablename** = “pokemon”
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    pokemon = db.Column(db.Text, nullable=False)
+    name = db.Column(db.Text, nullable=False, unique=True)
 ```
 
 ## Potential API Issues
@@ -62,6 +71,6 @@ Since the PokeAPI is free and fairly well-known, the only potential API issue wo
 
 ## Beyond CRUD
 
-The CRUD aspect of the app revolves around the User and Favorite models for the ability to save a pokémon to a single page of favorites. The stretch goal is to have an on-screen, interactive pokedex where users are able to see their saved pokémon after they’ve created an account without having to refresh the page.
+The CRUD aspect of the app revolves around the User and Favorite models for the ability to save a pokémon to a single page of favorites. The stretch goal is to have an on-screen, interactive [pokedex](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLEJx7kJR5PxwjKGB4Yj-mG71dJEj1jO_y0g&usqp=CAU) where users are able to see their saved pokémon after they’ve created an account without having to refresh the page.
 
-I may add an ability where players can use their current location or provide a location to pin a pokémon to the map using Leaflet that saves the coordinates, timestamp, and pokémon name to a database on the server, allowing other visitors to the site to view the pokémon’s last seen location go to the area that the pokémon was found in. users can use their current location or provide a location to pin a pokémon to the map.
+I may add an ability where players can use their current location or provide a location to pin a pokémon to the map using [Leaflet](https://leafletjs.com/SlavaUkraini/) that saves the coordinates, timestamp, and pokémon name to a database on the server, allowing other visitors to the site to view the pokémon’s last seen location go to the area that the pokémon was found in. users can use their current location or provide a location to pin a pokémon to the map.
