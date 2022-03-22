@@ -1,0 +1,17 @@
+bcrypt==3.2.0
+blinker==1.4
+cffi==1.15.0
+click==8.0.4
+Flask==2.0.3
+Flask-Bcrypt==0.7.1
+Flask-DebugToolbar==0.11.0
+Flask-SQLAlchemy==2.5.1
+greenlet==1.1.2
+itsdangerous==2.1.1
+Jinja2==3.0.3
+MarkupSafe==2.1.1
+psycopg2-binary==2.9.3
+pycparser==2.21
+six==1.16.0
+SQLAlchemy==1.4.32
+Werkzeug==2.0.3

@@ -35,8 +35,8 @@ class Favorite(db.Model):
 “””Favorites for user.”””
 **tablename** = “favorites”
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'))
-    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id', ondelete='cascade'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
+    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id', ondelete='cascade'), primary_key=True)
 
 class Pokemon(db.Model):
 “””Pokemon.”””
