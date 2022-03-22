@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://bootswatch.com/5/journal/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
     <title>{% block title %}TITLE GOES HERE{% endblock %}</title>
 </head>
 <body>
@@ -31,7 +32,7 @@
             <ul class="navbar-nav ml-auto">
                 {% if session['username'] %}
                 <li class="nav-item">
-                    <a class="nav-link active" href="/users/{{ session[CURR_USER_KEY] }}"> Hello, {{ g.user.username }}!</a>
+                    <a class="nav-link active" href="/user/{{ g.user.id }}"> Hello, {{ g.user.username }}!</a>
                 </li>
                 <li class="nav-item">
                     <a class="btn btn-link text-light" href="/logout">Logout</a>

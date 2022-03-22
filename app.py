@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 
 from models import db, connect_db, User, Favorite, Pokemon
-from forms import RegisterForm, LoginForm
+from forms import RegisterForm, LoginForm, UserEditForm
 from sqlalchemy.exc import IntegrityError
 
 import os
@@ -78,7 +78,7 @@ def create_user():
 
     if CURR_USER_KEY in session:
         flash("You're already logged in!", 'info')
-        return redirect(f"/users/{session[CURR_USER_KEY]}")
+        return redirect(f"/user/{session[CURR_USER_KEY]}")
 
     form = RegisterForm()
     if form.validate_on_submit():
@@ -91,7 +91,7 @@ def create_user():
 
         except IntegrityError:
             form.username.errors.append('Username taken. Please pick another.')
-            return render_template('users/signup.html', form=form)
+            return render_template('user/signup.html', form=form)
 
         do_login(user)
         flash("Welcome! Your account was created (-:", "success")
@@ -107,7 +107,7 @@ def login():
 
     if CURR_USER_KEY in session:
         flash("You're already logged in!", 'info')
-        return redirect(f"/users/{session[CURR_USER_KEY]}")
+        return redirect(f"/user/{session[CURR_USER_KEY]}")
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -136,3 +136,57 @@ def logout():
         del session[CURR_USER_KEY]
         flash("You've been logged out.", "success")
         return redirect('/')
+
+
+##############################################################################
+# General user routes:
+
+@app.route('/user/<int:user_id>')
+def user_show(user_id):
+    """Show user profile."""
+
+    user = User.query.get_or_404(user_id)
+
+    return render_template('user/favorites.html', user=user)
+
+
+@app.route('/user/edit', methods=["GET", "POST"])
+def profile():
+    """Update profile for current user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = g.user
+    form = UserEditForm(obj=user)
+
+    if form.validate_on_submit():
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email = form.email.data
+            user.password = form.password.data
+
+            db.session.commit()
+            flash(f"Your settings were saved!", "success")
+            return redirect(f"/user/{user.id}")
+
+        flash("Invalid password.", 'danger')
+
+    return render_template('user/edit.html', form=form, user_id=user.id)
+
+
+@app.route('/user/delete', methods=["POST"])
+def delete_user():
+    """Delete user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    do_logout()
+
+    db.session.delete(g.user)
+    db.session.commit()
+
+    return redirect("/signup")

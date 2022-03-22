@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<img src="https://cdn.landesa.org/wp-content/uploads/default-user-image.png" alt="avatar" style="width:150px;height:150px;">
+<div class="row full-width">
+    <div class="col-sm-3">
+        <h4 id="sidebar-username">@{{ user.username }}</h4>
+        <p class="user-location"><span class="fa fa-map-marker"></span>{% if user.location %}{{ user.location }}{% else %} somewhere{% endif %}</p>
+        <ul class="user-stats nav nav-pills">
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+{% block user_deets %}
+{% endblock %}
+</div>
+
+{% endblock %}
