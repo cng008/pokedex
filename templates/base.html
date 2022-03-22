@@ -27,19 +27,14 @@
                     <a class="nav-link" href="#">About</a>
                 </li>
             </ul>
-            {% if session['username'] %}
-                <li class="nav-item">
-                    <a class="nav-link active" href="/users/{{ session['username'] }}/feedback/add">Add Feedback</a>
-                </li>
-                {% endif %}
             </ul>
             <ul class="navbar-nav ml-auto">
                 {% if session['username'] %}
                 <li class="nav-item">
-                    <a class="nav-link active" href="/users/{{ session['username'] }}">{{ session['username'] }}</a>
+                    <a class="nav-link active" href="/users/{{ session[CURR_USER_KEY] }}"> Hello, {{ g.user.username }}!</a>
                 </li>
                 <li class="nav-item">
-                    <a class="btn btn-link" href="/logout">Logout</a>
+                    <a class="btn btn-link text-light" href="/logout">Logout</a>
                 </li>
                 {% else %}
                 <li class="nav-item">
@@ -51,7 +46,7 @@
                 {% endif %}
             <form class="d-flex">
                 <input class="form-control me-sm-2" type="text" placeholder="Search">
-                <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+                <button class="btn btn-secondary my-2 my-sm-0" type="submit">Go!</button>
             </form>
         </div>
         </div>

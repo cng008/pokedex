@@ -1,11 +1,11 @@
 """SQLAlchemy models for Pokedex."""
 
 import datetime
-from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
-bcrypt = Bcrypt()
 db = SQLAlchemy()
+bcrypt = Bcrypt()
 
 
 def connect_db(app):
@@ -23,26 +23,24 @@ class User(db.Model):
     email = db.Column(db.String(254), nullable=False, unique=True)
     username = db.Column(db.String(50), nullable=True, unique=True)
     password = db.Column(db.Text, nullable=False)
-    location = db.Column(db.Text)
+    # location = db.Column(db.Text)
     account_creation = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
     @classmethod
-    def signup(cls, username, email, password, image_url):
+    def signup(cls, email, username, password):
         """Sign up user.
-
         Hashes password and adds user to system.
         """
 
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+        hashed_pw = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
-            username=username,
             email=email,
-            password=hashed_pwd,
-            image_url=image_url,
+            username=username,
+            password=hashed_pw,
         )
 
         db.session.add(user)
@@ -71,7 +69,7 @@ class User(db.Model):
     @property
     def friendly_date(self):
         """Return nicely-formatted date."""
-        return self.timestamp.strftime("%b %-d,  %Y @ %-I:%M %p")
+        return self.account_creation.strftime("%b %-d,  %Y @ %-I:%M %p")
 
 
 class Favorite(db.Model):
