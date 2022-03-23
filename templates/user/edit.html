@@ -15,13 +15,13 @@
     {% endfor %}
 
     <div class="mt-4">
-    <small>To confirm changes, enter your password:</small>
-    {% if form.password.errors %}
-        {% for error in form.password.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-    {% endif %}
-    {{ form.password(placeholder="Enter your password to confirm", class="form-control") }}
+        <small>To confirm changes, enter your password:</small>
+        {% if form.password.errors %}
+            {% for error in form.password.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+        {{ form.password(placeholder="Enter your password to confirm", class="form-control") }}
     </div>
 
     <div class="edit-btn-area mt-3">

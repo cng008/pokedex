@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://bootswatch.com/5/journal/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+    <link rel="stylesheet" href="static/stylesheets/app.css">
     <title>{% block title %}TITLE GOES HERE{% endblock %}</title>
 </head>
 <body>
@@ -35,7 +36,7 @@
                     <a class="nav-link active" href="/user"> Hello, {{ g.user.username }}!</a>
                 </li>
                 <li class="nav-item">
-                    <a class="btn btn-link text-light" href="/logout">Logout</a>
+                    <a class="btn btn-link text-light mt-1 mx-2" href="/logout">Logout</a>
                 </li>
                 {% else %}
                 <li class="nav-item">
@@ -46,8 +47,8 @@
                 </li>
                 {% endif %}
             <form class="d-flex">
-                <input class="form-control me-sm-2" type="text" placeholder="Search">
-                <button class="btn btn-secondary my-2 my-sm-0" type="submit">Go!</button>
+                <input class="form-control me-sm-2 mt-2" type="text" placeholder="Search" style="height:2em;">
+                <button class="btn btn-secondary mt-2 search-btn" type="submit">Go!</button>
             </form>
         </div>
         </div>
