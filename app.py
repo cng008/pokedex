@@ -1,5 +1,5 @@
 """Flask app for Pokedex"""
-from flask import Flask, render_template, redirect, flash, session, g
+from flask import Flask, render_template, redirect, flash, session, g, request
 from flask_debugtoolbar import DebugToolbarExtension
 
 from models import db, connect_db, User, Favorite, Pokemon
@@ -91,7 +91,7 @@ def create_user():
 
         except IntegrityError:
             form.username.errors.append('Username taken. Please pick another.')
-            return render_template('user/signup.html', form=form)
+            return render_template('user/register.html', form=form)
 
         do_login(user)
         flash("Welcome! Your account was created (-:", "success")
@@ -111,8 +111,7 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.authenticate(form.username.data,
-                                 form.password.data)
+        user = User.authenticate(form.username.data, form.password.data)
 
         if user:
             do_login(user)
@@ -129,7 +128,7 @@ def logout():
     """Handle logout of user."""
 
     if not g.user:
-        flash("You need to be logged into an account to do that...", "danger")
+        flash("You need to be logged into an account to do that...", "primary")
         return redirect('/')
 
     if CURR_USER_KEY in session:
@@ -141,13 +140,21 @@ def logout():
 ##############################################################################
 # General user routes:
 
-@app.route('/user/<int:user_id>')
-def user_show(user_id):
+@app.route('/user')
+def user_show():
     """Show user profile."""
 
-    user = User.query.get_or_404(user_id)
+    user = User.query.get_or_404(g.user.id)
 
-    return render_template('user/favorites.html', user=user)
+    # snagging favorites in order from the database;
+    favorites = (Favorite
+                .query
+                .filter(Favorite.user_id == g.user.id)
+                .order_by(Favorite.date_faved.desc())
+                .limit(100)
+                .all())
+
+    return render_template('user/favorites.html', user=user, favorites=favorites)
 
 
 @app.route('/user/edit', methods=["GET", "POST"])
@@ -155,25 +162,31 @@ def profile():
     """Update profile for current user."""
 
     if not g.user:
-        flash("Access unauthorized.", "danger")
+        flash("Access unauthorized.", "primary")
         return redirect("/")
     
     user = g.user
+
     form = UserEditForm(obj=user)
-
     if form.validate_on_submit():
-        if User.authenticate(user.username, form.password.data):
-            user.username = form.username.data
-            user.email = form.email.data
-            user.password = form.password.data
+        try:
+            if User.authenticate(user.username, form.password.data):
+                user.profile_img_url = form.profile_img_url.data or User.profile_img_url.default.arg,
+                user.username = form.username.data
+                user.location = form.location.data
+                user.email = form.email.data
 
-            db.session.commit()
-            flash(f"Your settings were saved!", "success")
-            return redirect(f"/user/{user.id}")
+                db.session.commit()
+                flash(f"Your settings were saved!", "success")
+                return redirect(f"/user")
 
-        flash("Invalid password.", 'danger')
+        except IntegrityError:
+            db.session.rollback()
+            form.username.errors.append('Username taken. Please pick another.')
+            return render_template('user/edit.html', form=form)
 
-    return render_template('user/edit.html', form=form, user_id=user.id)
+        flash("Invalid password.", 'primary')
+    return render_template('user/edit.html', form=form)
 
 
 @app.route('/user/delete', methods=["POST"])
@@ -181,7 +194,7 @@ def delete_user():
     """Delete user."""
 
     if not g.user:
-        flash("Access unauthorized.", "danger")
+        flash("Access unauthorized.", "primary")
         return redirect("/")
 
     do_logout()
@@ -189,4 +202,4 @@ def delete_user():
     db.session.delete(g.user)
     db.session.commit()
 
-    return redirect("/signup")
+    return redirect("/")

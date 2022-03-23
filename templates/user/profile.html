@@ -1,19 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<img src="https://cdn.landesa.org/wp-content/uploads/default-user-image.png" alt="avatar" style="width:150px;height:150px;">
 <div class="row full-width">
-    <div class="col-sm-3">
-        <h4 id="sidebar-username">@{{ user.username }}</h4>
-        <p class="user-location"><span class="fa fa-map-marker"></span>{% if user.location %}{{ user.location }}{% else %} somewhere{% endif %}</p>
-        <ul class="user-stats nav nav-pills">
-        </ul>
+    <div class="col-xs-6 col-sm-4 col-md-3">
+        <div class="text-center">
+            <img src="{{ g.user.profile_img_url }}" alt="avatar" style="height:10em;border-radius:25em;object-fit:cover;">
+            <h4 id="sidebar-username" class="mt-1">@{{ g.user.username }}</h4>
+            <p class="user-location"><span class="fa fa-map-marker"></span>{% if g.user.location %} {{ g.user.location }}{% else %} somewhere{% endif %}</p>
+            <a href="/user/edit" class="btn btn-outline-secondary btn-sm mt-2">Edit Profile</a>
+        </div>
     </div>
-</div>
 
-<div class="row">
-{% block user_deets %}
-{% endblock %}
+    <div class="col-xs-6 col-sm-7 col-md-8 mt-4">
+        {% block user_deets %}
+        {% endblock %}
+    </div>
+        
 </div>
 
 {% endblock %}

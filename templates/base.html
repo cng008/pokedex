@@ -11,7 +11,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Pokédex</a>
+            <a class="navbar-brand" href="/">Pokédex</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -32,7 +32,7 @@
             <ul class="navbar-nav ml-auto">
                 {% if session['username'] %}
                 <li class="nav-item">
-                    <a class="nav-link active" href="/user/{{ g.user.id }}"> Hello, {{ g.user.username }}!</a>
+                    <a class="nav-link active" href="/user"> Hello, {{ g.user.username }}!</a>
                 </li>
                 <li class="nav-item">
                     <a class="btn btn-link text-light" href="/logout">Logout</a>

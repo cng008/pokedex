@@ -1,0 +1,37 @@
+{% extends 'user/profile.html' %}
+{% block user_deets %}
+
+<h2 class="join-message">Edit Your Profile.</h2>
+<form method="POST" id="user_form">
+    {{ form.hidden_tag() }}
+
+    {% for field in form if field.widget.input_type != 'hidden' and field.name != 'password' %}
+    {{ field.label(class_="form-label mt-3")}}
+    {% for error in field.errors %}
+    <span class="text-danger">{{ error }}</span>
+    {% endfor %}
+    {{ field(placeholder=field.label.text, class="form-control") }}
+    {% endfor %}
+
+    <div class="mt-4">
+    <small>To confirm changes, enter your password:</small>
+    {% if form.password.errors %}
+        {% for error in form.password.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+    {% endif %}
+    {{ form.password(placeholder="Enter your password to confirm", class="form-control") }}
+    </div>
+
+    <div class="edit-btn-area mt-3">
+        <button class="btn btn-success">Submit</button>
+        <a href="/user" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+<form method="POST" action="/user/delete" class="form-inline">
+    <button class="btn btn-outline-primary btn-sm mt-5">Delete Profile</button>
+</form>
+
+
+{% endblock %}

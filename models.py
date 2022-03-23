@@ -7,6 +7,7 @@ from flask_bcrypt import Bcrypt
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 
+DEFAULT_AVATAR_IMG = "https://cdn.landesa.org/wp-content/uploads/default-user-image.png"
 
 def connect_db(app):
     """Connect database to provided Flask app."""
@@ -23,8 +24,11 @@ class User(db.Model):
     email = db.Column(db.String(254), nullable=False, unique=True)
     username = db.Column(db.String(50), nullable=True, unique=True)
     password = db.Column(db.Text, nullable=False)
-    # location = db.Column(db.Text)
+    location = db.Column(db.Text, nullable=True)
+    profile_img_url = db.Column(db.Text, nullable=True, default=DEFAULT_AVATAR_IMG)
     account_creation = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+    
+    favorites = db.relationship('Pokemon', secondary="favorites")
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -78,6 +82,7 @@ class Favorite(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
     pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id', ondelete='cascade'), primary_key=True)
+    date_faved = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
 
 
 class Pokemon(db.Model):

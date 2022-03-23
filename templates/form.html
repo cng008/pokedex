@@ -2,12 +2,12 @@
 
 {% for field in form if field.widget.input_type != 'hidden' %}
     <span>
-        <!-- {{ field.label(class_="form-label")}} -->
+        {{ field.label(class_="form-label mt-2")}}
         <!-- {{ field(class_="form-control")}} -->
 
         {% for error in field.errors %}
         <small class="form-text text-danger">{{ error }}</small>
         {% endfor %}
-        {{ field(placeholder=field.label.text, class="form-control my-3") }}
+        {{ field(placeholder=field.label.text, class="form-control") }}
     </span>
 {% endfor %}
