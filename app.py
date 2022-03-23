@@ -1,6 +1,7 @@
 """Flask app for Pokedex"""
 from flask import Flask, render_template, redirect, flash, session, g, request
 from flask_debugtoolbar import DebugToolbarExtension
+import requests
 
 from models import db, connect_db, User, Favorite, Pokemon
 from forms import RegisterForm, LoginForm, UserEditForm
@@ -26,6 +27,7 @@ connect_db(app)
 db.create_all()
 
 CURR_USER_KEY = 'username'
+API_BASE_URL = 'https://pokeapi.co/api/v2'
 
 ##############################################################################
 # Homepage and error pages
@@ -33,7 +35,8 @@ CURR_USER_KEY = 'username'
 @app.route('/')
 def home_page():
     """Homepage."""
-    return render_template('base.html')
+    
+    return render_template('search.html')
 
 
 @app.errorhandler(404)
@@ -203,3 +206,31 @@ def delete_user():
     db.session.commit()
 
     return redirect("/")
+
+
+##############################################################################
+# Search routes:
+
+def request_poke(name):
+    """Return {id, name, image, types} from PokeApi for given search term."""
+
+    url = f"{API_BASE_URL}/pokemon/{name}"
+    resp = requests.get(url)
+    data = resp.json()
+
+    id = data['id']
+    name = data['species']['name'].capitalize()
+    pokedex_img = data['sprites']['front_default']
+    img = data['sprites']['other']['official-artwork']['front_default']
+    types = data['types']
+
+    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types}
+
+
+@app.route('/pokemon/')
+def get_poke():
+    """Handle form submission; return form, showing pokemon info from submission."""
+    search = request.args.get('search')
+    pokemon = request_poke(search)
+
+    return render_template('search.html', pokemon=pokemon)
