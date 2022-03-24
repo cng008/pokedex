@@ -41,7 +41,7 @@ def home_page():
     pokemon = [i for i in requests.get(f'{API_BASE_URL}/pokemon/').json()['results']]
     pokemon_data = [fetch_poke(i['name']) for i in pokemon] # https://medium.com/@sergio13prez/fetching-them-all-poke-api-62ca580981a2
     
-    return render_template('home.html', pokemon=pokemon, pokemon_data=pokemon_data)
+    return render_template('pokemon/home.html', pokemon=pokemon, pokemon_data=pokemon_data)
 
 
 @app.errorhandler(404)
@@ -52,12 +52,12 @@ def page_not_found(e):
 
 
 ##############################################################################
-# SEARCH ROUTES
+# GENERAL POKEMON SEARCH ROUTES
 
-def fetch_poke(name):
+def fetch_poke(pokemon_name):
     """Return {id, name, image, types} from PokeApi for given search term."""
 
-    resp = requests.get(f"{API_BASE_URL}/pokemon/{name}")
+    resp = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}")
     data = resp.json()
 
     id = data['id']
@@ -74,10 +74,18 @@ def get_poke():
     """Handle form submission; return form, showing pokemon info from submission."""
     
     search = request.args.get('search')
-    pokemon = fetch_poke(search.replace(' ', '-'))
+    pokemon = fetch_poke(search.lower().replace(' ', '-'))
 
-    return render_template('results.html', pokemon=pokemon)
+    return render_template('pokemon/results.html', pokemon=pokemon)
 
+
+@app.route('/pokemon/<pokemon>')
+def poke_details(pokemon):
+    """View details page of pokemon."""
+
+    pokemon = fetch_poke(pokemon)
+
+    return render_template('pokemon/show.html', pokemon=pokemon)
 
 ##############################################################################
 # USER SIGNUP/LOGIN/LOGOUT

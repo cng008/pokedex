@@ -4,3 +4,14 @@
   align-items: center;
   height: 2em;
 }
+
+.results > .card {
+  transition: all 0.2s ease-in-out;
+  /* transition: margin 0.2s ease-in-out; */
+}
+
+.results > .card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 11px rgba(33, 33, 33, 0.2);
+  /* margin-top: -30px; */
+}
