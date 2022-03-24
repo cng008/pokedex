@@ -29,14 +29,19 @@ db.create_all()
 CURR_USER_KEY = 'username'
 API_BASE_URL = 'https://pokeapi.co/api/v2'
 
+
 ##############################################################################
-# Homepage and error pages
+# HOMEPAGE AND ERROR PAGES
 
 @app.route('/')
 def home_page():
-    """Homepage."""
+    """Homepage. See first 20 pokemon."""
+
+    names = requests.get(f'{API_BASE_URL}/pokemon/')
+    pokemon = [i for i in requests.get(f'{API_BASE_URL}/pokemon/').json()['results']]
+    pokemon_data = [fetch_poke(i['name']) for i in pokemon] # https://medium.com/@sergio13prez/fetching-them-all-poke-api-62ca580981a2
     
-    return render_template('search.html')
+    return render_template('home.html', pokemon=pokemon, pokemon_data=pokemon_data)
 
 
 @app.errorhandler(404)
@@ -45,8 +50,37 @@ def page_not_found(e):
 
     return render_template('404.html'), 404
 
+
 ##############################################################################
-# User signup/login/logout
+# SEARCH ROUTES
+
+def fetch_poke(name):
+    """Return {id, name, image, types} from PokeApi for given search term."""
+
+    resp = requests.get(f"{API_BASE_URL}/pokemon/{name}")
+    data = resp.json()
+
+    id = data['id']
+    name = data['species']['name']
+    pokedex_img = data['sprites']['front_default']
+    img = data['sprites']['other']['official-artwork']['front_default']
+    types = data['types']
+
+    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types}
+
+
+@app.route('/pokemon/')
+def get_poke():
+    """Handle form submission; return form, showing pokemon info from submission."""
+    
+    search = request.args.get('search')
+    pokemon = fetch_poke(search.replace(' ', '-'))
+
+    return render_template('results.html', pokemon=pokemon)
+
+
+##############################################################################
+# USER SIGNUP/LOGIN/LOGOUT
 
 @app.before_request
 def add_user_to_g():
@@ -118,7 +152,7 @@ def login():
 
         if user:
             do_login(user)
-            flash(f"Hello, {user.username}!", "success")
+            flash(f"Hello, {user.username}, welcome back!", "success")
             return redirect("/")
 
         flash("Invalid credentials.", 'danger')
@@ -141,7 +175,7 @@ def logout():
 
 
 ##############################################################################
-# General user routes:
+# GENERAL USER ROUTES
 
 @app.route('/user')
 def user_show():
@@ -206,31 +240,3 @@ def delete_user():
     db.session.commit()
 
     return redirect("/")
-
-
-##############################################################################
-# Search routes:
-
-def request_poke(name):
-    """Return {id, name, image, types} from PokeApi for given search term."""
-
-    url = f"{API_BASE_URL}/pokemon/{name}"
-    resp = requests.get(url)
-    data = resp.json()
-
-    id = data['id']
-    name = data['species']['name'].capitalize()
-    pokedex_img = data['sprites']['front_default']
-    img = data['sprites']['other']['official-artwork']['front_default']
-    types = data['types']
-
-    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types}
-
-
-@app.route('/pokemon/')
-def get_poke():
-    """Handle form submission; return form, showing pokemon info from submission."""
-    search = request.args.get('search')
-    pokemon = request_poke(search)
-
-    return render_template('search.html', pokemon=pokemon)

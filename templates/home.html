@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Pokédex{% endblock %}
+{% block content %}
+
+<div class="row">
+    {% include "search.html" %}
+
+    <section class="results row">
+        {% for p in pokemon_data %}
+        <div class="card mx-3 my-4 border-light" style="width: 18rem;">
+            <a href="{{ p[1]['name'] }}" class="text-decoration-none text-dark">
+                <div class="m-2 my-4">
+                    <figure>
+                        <img src="{{ p[2]['image'] }}" alt="{{ p[1]['name'] }} image" class="image" style="border-radius:5px;height: 15em;background-color: rgb(242, 242, 242);">
+                    </figure>
+                <div class="pokemon-info row">
+                    <p class="id">
+                        <span class="number-prefix" style="font-family:monospace;color:#919191;">#{{ p[0]['id'] }}</span>
+                    </p>
+                    <h4>{{ p[1]['name'].capitalize().replace('-', ' ') }}</h4>
+                    {% for ability in p[4]['types'] %}
+                    <div class="abilities col-3">
+                        <span class="badge bg-{% if ability['type']['name'] == 'normal' %}secondary{% elif ability['type']['name'] == 'fire' %}primary{% elif ability['type']['name'] == 'water' %}info{% elif ability['type']['name'] == 'grass' %}success{% elif ability['type']['name'] == 'electric' %}warning{% elif ability['type']['name'] == 'ice' %}info{% elif ability['type']['name'] == 'fighting' %}primary{% elif ability['type']['name'] == 'poison' %}dark{% elif ability['type']['name'] == 'ground' %}warning{% elif ability['type']['name'] == 'flying' %}info{% elif ability['type']['name'] == 'psychic' %}danger{% elif ability['type']['name'] == 'bug' %}success{% elif ability['type']['name'] == 'rock' %}secondary{% elif ability['type']['name'] == 'ghost' %}dark{% elif ability['type']['name'] == 'dark' %}dark{% elif ability['type']['name'] == 'dragon' %}info{% elif ability['type']['name'] == 'steel' %}secondary{% elif ability['type']['name'] == 'fairy' %}light{% elif ability['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ ability['type']['name'] }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </section>
+
+</div>
+
+{% endblock %}

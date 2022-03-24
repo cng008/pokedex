@@ -1,40 +1,6 @@
-{% extends 'base.html' %}
-{% block title %}Pokédex{% endblock %}
-{% block content %}
+<h2 class="text-center">Search a Pokémon in Pokédex:</h2>
 
-<div class="row">
-    <div class="col-10 mx-auto">
-        <form action="/pokemon/" class="d-flex">
-            <input class="form-control me-sm-2 mt-2" type="text" name="search" placeholder="Search" style="height:2em;">
-            <button class="btn btn-secondary mt-2 search-btn" type="submit">Go!</button>
-        </form>        
-    </div>
-
-    <p>{{ pokemon }}</p>
-
-    <section class="results">
-        {% if pokemon %}
-        <div class="card col-3">
-            <div class="m-4">
-                <figure>
-                    <img src="{{ pokemon[2]['image'] }}" alt="pokemon image" class="" style="height:15em;background-color:rgb(242, 242, 242);">
-                </figure>
-                <div class="pokemon-info row">
-                    <p class="id">
-                        <span class="number-prefix">#{{ pokemon[0]['id'] }}</span>
-                    </p>
-                    <h4>{{ pokemon[1]['name'] }}</h4>
-                    {% for ability in pokemon[4]['types'] %}
-                    <div class="abilities col-3">
-                        <span class="badge bg-{% if ability['type']['name'] == 'normal' %}secondary{% elif ability['type']['name'] == 'fire' %}primary{% elif ability['type']['name'] == 'water' %}info{% elif ability['type']['name'] == 'grass' %}success{% elif ability['type']['name'] == 'electric' %}warning{% elif ability['type']['name'] == 'ice' %}info{% elif ability['type']['name'] == 'fighting' %}primary{% elif ability['type']['name'] == 'poison' %}dark{% elif ability['type']['name'] == 'ground' %}warning{% elif ability['type']['name'] == 'flying' %}info{% elif ability['type']['name'] == 'psychic' %}danger{% elif ability['type']['name'] == 'bug' %}success{% elif ability['type']['name'] == 'rock' %}secondary{% elif ability['type']['name'] == 'ghost' %}dark{% elif ability['type']['name'] == 'dark' %}dark{% elif ability['type']['name'] == 'dragon' %}info{% elif ability['type']['name'] == 'steel' %}secondary{% elif ability['type']['name'] == 'fairy' %}light{% elif ability['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ ability['type']['name'] }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    </section>
-
-</div>
-
-{% endblock %}
+<form action="/pokemon/" class="d-flex">
+    <input class="form-control me-sm-2" type="text" name="search" placeholder="Type Pokémon name ('Pikachu', 'Bulbasaur', 'Squirtle')" style="height:2em;">
+    <button class="btn btn-info search-btn" type="submit"><span style="font-size:18px;">Go!</span></button>
+</form>
