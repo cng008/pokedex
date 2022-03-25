@@ -1,5 +1,5 @@
 """Flask app for Pokedex"""
-from flask import Flask, render_template, redirect, flash, session, g, request
+from flask import Flask, render_template, redirect, flash, session, g, request, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 import requests
 
@@ -62,11 +62,42 @@ def fetch_poke(pokemon_name):
 
     id = data['id']
     name = data['species']['name']
-    pokedex_img = data['sprites']['front_default']
     img = data['sprites']['other']['official-artwork']['front_default']
+    pokedex_img = data['sprites']['front_default']
     types = data['types']
+    base_xp = data['base_experience']
+    height = data['height']
+    weight = data['weight']
+    abilities = data['abilities']
 
-    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types}
+    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types},{'base_xp':base_xp},{'height':height},{'weight':weight},{'abilities':abilities}
+
+
+def fetch_evolutions(pokemon_name):
+    """Return all pokemon evolutions (if exists) from PokeApi for given search term.
+        Not every pokemon will have more than one evolution, so a catch/error accounts for that.
+    """
+
+    get_url = requests.get(f"{API_BASE_URL}/pokemon-species/{pokemon_name}").json()['evolution_chain']['url']
+    chain = requests.get(get_url).json()['chain']
+
+    first_evol = chain['species']['name']
+    try: 
+        second_evol = chain['evolves_to'][0]['species']['name']
+    except IndexError:
+        second_evol = None
+
+    try: 
+        third_evol = chain['evolves_to'][0]['evolves_to'][0]['species']['name']
+    except IndexError:
+        third_evol = None
+
+    try: 
+        fourth_evol = chain['evolves_to'][0]['evolves_to'][0]['evolves_to'][0]['species']['name']
+    except IndexError:
+        fourth_evol = None
+
+    return [first_evol,second_evol,third_evol,fourth_evol]
 
 
 @app.route('/pokemon/')
@@ -79,13 +110,21 @@ def get_poke():
     return render_template('pokemon/results.html', pokemon=pokemon)
 
 
-@app.route('/pokemon/<pokemon>')
-def poke_details(pokemon):
-    """View details page of pokemon."""
+@app.route('/pokemon/<pokemon_name>')
+def poke_details(pokemon_name):
+    """View details page of pokemon.
+        Includes evolutions of the pokemon."""
 
-    pokemon = fetch_poke(pokemon)
+    pokemon_data = fetch_poke(pokemon_name)
+    evolutions_list = fetch_evolutions(pokemon_name)
+    clean_list = []
+    for i in evolutions_list:
+        if i != None:
+            clean_list.append(i)
+    evolutions_data = [ fetch_poke(i) for i in clean_list]
 
-    return render_template('pokemon/show.html', pokemon=pokemon)
+    return render_template('pokemon/show.html', pokemon=pokemon_data, evolutions=evolutions_data)
+
 
 ##############################################################################
 # USER SIGNUP/LOGIN/LOGOUT

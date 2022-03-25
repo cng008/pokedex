@@ -15,3 +15,19 @@
   box-shadow: 0 0 11px rgba(33, 33, 33, 0.2);
   /* margin-top: -30px; */
 }
+
+.abilities-lg {
+  margin-left: 1.5em;
+}
+
+.detail-type {
+  transform: scale(1.5);
+  padding: 5px 25px;
+  margin-right: 5em;
+}
+
+.stats {
+  width: 100%;
+  border-radius: 5px;
+  padding: 15px;
+}
