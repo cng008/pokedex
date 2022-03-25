@@ -6,6 +6,7 @@ import requests
 from models import db, connect_db, User, Favorite, Pokemon
 from forms import RegisterForm, LoginForm, UserEditForm
 from sqlalchemy.exc import IntegrityError
+import random
 
 import os
 import re
@@ -62,6 +63,8 @@ def fetch_poke(pokemon_name):
 
     id = data['id']
     name = data['species']['name']
+    # img = data['sprites']['front_default']
+    # img = data['sprites']['other']['dream_world']['front_default']
     img = data['sprites']['other']['official-artwork']['front_default']
     pokedex_img = data['sprites']['front_default']
     types = data['types']
@@ -100,6 +103,18 @@ def fetch_evolutions(pokemon_name):
     return [first_evol,second_evol,third_evol,fourth_evol]
 
 
+def fetch_blurb(pokemon_name):
+    """Generates a random fact about the pokemon on page load."""
+    
+    data = requests.get(f"{API_BASE_URL}/pokemon-species/{pokemon_name}").json()['flavor_text_entries']
+    blurbs = []
+    for i in data:
+        if i['language']['name'] == 'en':
+            blurbs.append(i['flavor_text'])
+
+    return random.choice(blurbs)
+
+
 @app.route('/pokemon/')
 def get_poke():
     """Handle form submission; return form, showing pokemon info from submission."""
@@ -116,6 +131,7 @@ def poke_details(pokemon_name):
         Includes evolutions of the pokemon."""
 
     pokemon_data = fetch_poke(pokemon_name)
+    blurb = fetch_blurb(pokemon_name)
     evolutions_list = fetch_evolutions(pokemon_name)
     clean_list = []
     for i in evolutions_list:
@@ -123,7 +139,7 @@ def poke_details(pokemon_name):
             clean_list.append(i)
     evolutions_data = [ fetch_poke(i) for i in clean_list]
 
-    return render_template('pokemon/show.html', pokemon=pokemon_data, evolutions=evolutions_data)
+    return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data)
 
 
 ##############################################################################
@@ -287,3 +303,14 @@ def delete_user():
     db.session.commit()
 
     return redirect("/")
+
+
+##############################################################################
+# Turn off all caching in Flask
+#   automatically close all unused/hanging connections and prevent bottleneck in your code
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db.session.remove()
+# https://stackoverflow.com/a/53715116
+

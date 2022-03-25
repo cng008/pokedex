@@ -2,51 +2,53 @@
 {% block title %}{{ pokemon[1]['name'].capitalize().replace('-', ' ') }}{% endblock %}
 {% block content %}
 
-    <section class="info container">
-        <div class="pokemon-card card my-4 border-light">
+    <section class="container" style="width:70fr">
+        <div class="pokemon-card card border-light">
 
             <div class="pokemon-id row m-4">
                 <h1 class="text-center mb-5">{{ pokemon[1]['name'].capitalize().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon[0]['id'] }}</span></h1>
             </div>
 
-            <div class="row justify-content-around mx-auto">
+            <div class="row mx-auto justify-content-center">
                 <div class="pokemon-image col-sm-11 col-md-7">
                     <figure>
-                        <img src="{{ pokemon[2]['image'] }}" alt="{{ pokemon[1]['name'] }} image" class="image img-fluid" style="border-radius:5px;background-color: rgb(242, 242, 242);">
+                        <img src="{{ pokemon[2]['image'] }}" alt="{{ pokemon[1]['name'] }} image" class="image img-fluid mx-auto d-block" style="border-radius:5px;background-color: rgb(242, 242, 242);">
                     </figure>
                 </div>
 
-                <!-- <div class="col-1"></div> -->
-                <div class="pokemon-info col">
+                <div class="pokemon-info col me-xl-5">
+                    <p class="lead mx-2">{{ blurb }}</p>
                     <div class="stats row text-white bg-info mb-3">
-                        <div class="col-5 mb-4">
+                        <div class="col-5 mx-auto mb-4">
                             <h5>Height</h5>
                             <p>{{ pokemon[6]['height'] }} ft</p>
                         </div>
-                        <div class="col-5 mb-4">
+                        <div class="col-5 mx-auto mb-4">
                             <h5>Base XP</h5>
                             <p>{{ pokemon[5]['base_xp'] }} XP</p>  
                         </div>
-                        <div class="col-5">
+                        <div class="col-5 mx-auto">
                             <h5>Weight</h5>
                             <p>{{ pokemon[7]['weight'] }} lbs</p>  
                         </div>
-                        <div class="col-5">
+                        <div class="col-5 mx-auto">
                             <h5>Abilities</h5>
                             <p>{% for ability in pokemon[8]['abilities'] %}{{ability['ability']['name']}}<br>{% endfor %}</p>  
                         </div>
-                      </div>
-                      
+                    </div>
+                    
                     <h3 class="my-4">Type</h3>
                     <div class="abilities-lg">
                         {% for type in pokemon[4]['types'] %}
-                        <span class="detail-type badge bg-{% if  type['type']['name'] == 'normal' %}secondary{% elif  type['type']['name'] == 'fire' %}primary{% elif  type['type']['name'] == 'water' %}info{% elif  type['type']['name'] == 'grass' %}success{% elif  type['type']['name'] == 'electric' %}warning{% elif  type['type']['name'] == 'ice' %}info{% elif  type['type']['name'] == 'fighting' %}primary{% elif  type['type']['name'] == 'poison' %}dark{% elif  type['type']['name'] == 'ground' %}warning{% elif  type['type']['name'] == 'flying' %}info{% elif  type['type']['name'] == 'psychic' %}danger{% elif  type['type']['name'] == 'bug' %}success{% elif  type['type']['name'] == 'rock' %}secondary{% elif  type['type']['name'] == 'ghost' %}dark{% elif  type['type']['name'] == 'dark' %}dark{% elif  type['type']['name'] == 'dragon' %}info{% elif  type['type']['name'] == 'steel' %}secondary{% elif  type['type']['name'] == 'fairy' %}light{% elif  type['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ type['type']['name'] }}</span>
+                        <span class="detail-type mb-3 badge bg-{% if  type['type']['name'] == 'normal' %}secondary{% elif  type['type']['name'] == 'fire' %}primary{% elif  type['type']['name'] == 'water' %}info{% elif  type['type']['name'] == 'grass' %}success{% elif  type['type']['name'] == 'electric' %}warning{% elif  type['type']['name'] == 'ice' %}info{% elif  type['type']['name'] == 'fighting' %}primary{% elif  type['type']['name'] == 'poison' %}dark{% elif  type['type']['name'] == 'ground' %}warning{% elif  type['type']['name'] == 'flying' %}info{% elif  type['type']['name'] == 'psychic' %}danger{% elif  type['type']['name'] == 'bug' %}success{% elif  type['type']['name'] == 'rock' %}secondary{% elif  type['type']['name'] == 'ghost' %}dark{% elif  type['type']['name'] == 'dark' %}dark{% elif  type['type']['name'] == 'dragon' %}info{% elif  type['type']['name'] == 'steel' %}secondary{% elif  type['type']['name'] == 'fairy' %}light{% elif  type['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ type['type']['name'] }}</span>
                         {% endfor %}
                     </div>
                 </div>
+
+                <!-- <div class="col-1"></div> -->
             </div>
 
-            <h3 class="mt-4">Evolutions</h3>
+            <h3 class="m-4">Evolutions</h3>
             {% if range(evolutions | length < 2) %}
             <small class="text-muted">This pokemon does not evolve</small>
             <div class="col">
@@ -97,6 +99,5 @@
             
         </div>
     </section>
-
 
 {% endblock %}

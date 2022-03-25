@@ -1,8 +1,22 @@
+.navbar-brand {
+  font-size: 22px;
+  text-shadow: -1px -1px 0 rgb(63, 102, 149), 1px -1px 0 rgb(63, 102, 149),
+    -1px 1px 0 rgb(63, 102, 149), 1px 1px 0 rgb(63, 102, 149);
+}
+
+body {
+  background-color: rgb(242, 242, 242);
+}
+
 .search-btn {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 2em;
+}
+
+.card {
+  border-radius: 10px;
 }
 
 .results > .card {
@@ -27,7 +41,8 @@
 }
 
 .stats {
-  width: 100%;
+  width: 99%;
+  margin-left: 0.1em;
   border-radius: 5px;
   padding: 15px;
 }
