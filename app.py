@@ -1,5 +1,5 @@
 """Flask app for Pokedex"""
-from flask import Flask, render_template, redirect, flash, session, g, request, jsonify
+from flask import Flask, render_template, redirect, flash, session, g, request
 from flask_debugtoolbar import DebugToolbarExtension
 import requests
 
@@ -128,18 +128,57 @@ def get_poke():
 @app.route('/pokemon/<pokemon_name>')
 def poke_details(pokemon_name):
     """View details page of pokemon.
-        Includes evolutions of the pokemon."""
+        Includes evolutions of the pokemon.
+        Check if pokemon is in favorites if user is logged in.
+    """
 
     pokemon_data = fetch_poke(pokemon_name)
     blurb = fetch_blurb(pokemon_name)
+
     evolutions_list = fetch_evolutions(pokemon_name)
     clean_list = []
     for i in evolutions_list:
         if i != None:
             clean_list.append(i)
-    evolutions_data = [ fetch_poke(i) for i in clean_list]
+    evolutions_data = [fetch_poke(i) for i in clean_list]
+
+    poke_id = pokemon_data[0]['id']
+    name = pokemon_data[1]['name']
+
+    check_pokemon = Pokemon.query.get(name)
+
+    if not check_pokemon:
+        add_pokemon = Pokemon(name=name, pokeapi_id=poke_id)
+        db.session.add(add_pokemon)
+        db.session.commit()
+
+    if g.user:        
+        pokemon = (Pokemon.query.all())
+        faved_pokemon_names = [favorite.name for favorite in g.user.favorites]
+        return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, favs=faved_pokemon_names)
 
     return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data)
+
+
+##############################################################################
+# FAVORITES ROUTE
+
+@app.route('/pokemon/<pokemon_name>/fav', methods=['POST'])
+def add_favorite(pokemon_name):
+    """Toggle a liked pokemon for the currently-logged-in user."""
+
+    favorited_poke = Pokemon.query.get_or_404(pokemon_name)
+    user_favs = g.user.favorites
+
+    if favorited_poke in user_favs:
+        g.user.favorites = [fav for fav in user_favs if fav != favorited_poke]
+    else:
+        g.user.favorites.append(favorited_poke)
+
+    db.session.commit()
+
+    return redirect(request.referrer) # https://stackoverflow.com/a/61902927
+    # return redirect(f"pokemon/{pokemon_name}") # use this instead for testing
 
 
 ##############################################################################
@@ -241,20 +280,18 @@ def logout():
 # GENERAL USER ROUTES
 
 @app.route('/user')
-def user_show():
-    """Show user profile."""
+def user_show_favorites():
+    """Show user profile.
+        Show list of pokemon user has favorited.
+    """
 
-    user = User.query.get_or_404(g.user.id)
+    if CURR_USER_KEY not in session:
+        flash("Access unauthorized.", "primary")
+        return redirect("/")
 
-    # snagging favorites in order from the database;
-    favorites = (Favorite
-                .query
-                .filter(Favorite.user_id == g.user.id)
-                .order_by(Favorite.date_faved.desc())
-                .limit(100)
-                .all())
+    fav_pokemon = [fetch_poke(pokemon.name) for pokemon in g.user.favorites]
 
-    return render_template('user/favorites.html', user=user, favorites=favorites)
+    return render_template('user/favorites.html', user=g.user, favorites=fav_pokemon)
 
 
 @app.route('/user/edit', methods=["GET", "POST"])

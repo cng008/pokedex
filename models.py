@@ -21,17 +21,17 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(254), nullable=False, unique=True)
+    email = db.Column(db.String(320), nullable=False, unique=True)
     username = db.Column(db.String(50), nullable=True, unique=True)
-    password = db.Column(db.Text, nullable=False)
-    location = db.Column(db.Text, nullable=True)
+    password = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(85), nullable=True)
     profile_img_url = db.Column(db.Text, nullable=True, default=DEFAULT_AVATAR_IMG)
     account_creation = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     
-    favorites = db.relationship('Pokemon', secondary="favorites")
+    favorites = db.relationship('Pokemon', secondary='favorites')
 
     def __repr__(self):
-        return f"<User #{self.id}: {self.username}, {self.email}>"
+        return f"<User #{self.id}: {self.username}, {self.email}, {self.account_creation}>"
 
     @classmethod
     def signup(cls, email, username, password):
@@ -73,7 +73,7 @@ class User(db.Model):
     @property
     def friendly_date(self):
         """Return nicely-formatted date."""
-        return self.account_creation.strftime("%b %-d,  %Y @ %-I:%M %p")
+        return self.account_creation.strftime('%b %-d,  %Y @ %-I:%M %p')
 
 
 class Favorite(db.Model):
@@ -81,13 +81,19 @@ class Favorite(db.Model):
     __tablename__ = 'favorites'
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
-    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id', ondelete='cascade'), primary_key=True)
-    date_faved = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+    poke_name = db.Column(db.Text, db.ForeignKey('pokemon.name', ondelete='cascade'), primary_key=True)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+
+    def __repr__(self):
+        return f"<Favorite {self.user_id}: {self.poke_name}, {self.timestamp}>"
 
 
 class Pokemon(db.Model):
     """Pokemon."""
     __tablename__ = 'pokemon'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.Text, nullable=False, unique=True)
+    name = db.Column(db.Text, primary_key=True, nullable=False, unique=True)
+    pokeapi_id = db.Column(db.Integer, nullable=False, unique=True)
+
+    def __repr__(self):
+        return f"<Pokemon {self.pokeapi_id}: {self.name}>"
