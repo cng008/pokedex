@@ -6,6 +6,9 @@
 
 body {
   background-color: rgb(242, 242, 242);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .search-btn {
@@ -45,4 +48,8 @@ body {
   margin-left: 0.1em;
   border-radius: 5px;
   padding: 15px;
+}
+
+footer {
+  margin-top: auto;
 }
