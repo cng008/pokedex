@@ -1,6 +1,9 @@
-<h2 class="text-center">Search a Pokémon in Pokédex:</h2>
-
 <form action="/pokemon/" class="d-flex">
-    <input class="form-control me-sm-2" type="text" name="search" placeholder="Type Pokémon name ('Pikachu', 'Bulbasaur', 'Squirtle')" style="height:2em;">
-    <button class="btn btn-info search-btn" type="submit"><span style="font-size:18px;">Go!</span></button>
+    <input class="form-control me-sm-2" type="text" name="search" placeholder="Type Pokémon name ('Pikachu', 'Bulbasaur', 'Squirtle')" autocomplete="off" list="pokemon-list" style="height:2em;">
+    <button class="btn btn-warning search-btn" type="submit"><span class="text-info" style="font-size:18px;">Go!</span></button>
+    <datalist id="pokemon-list">
+        {% for pokemon in all_pokemon %}
+        <option>{{ pokemon.title() }}</option>
+        {% endfor %}
+    </datalist>
 </form>

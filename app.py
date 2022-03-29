@@ -5,6 +5,7 @@ import requests
 
 from models import db, connect_db, User, Favorite, Pokemon
 from forms import RegisterForm, LoginForm, UserEditForm
+from pokemons import all_pokemon
 from sqlalchemy.exc import IntegrityError
 import random
 
@@ -38,18 +39,17 @@ API_BASE_URL = 'https://pokeapi.co/api/v2'
 def home_page():
     """Homepage. See first 20 pokemon."""
 
-    names = requests.get(f'{API_BASE_URL}/pokemon/')
-    pokemon = [i for i in requests.get(f'{API_BASE_URL}/pokemon/').json()['results']]
+    pokemon = [i for i in requests.get(f'{API_BASE_URL}/pokemon/?limit=15').json()['results']]
     pokemon_data = [fetch_poke(i['name']) for i in pokemon] # https://medium.com/@sergio13prez/fetching-them-all-poke-api-62ca580981a2
     
-    return render_template('pokemon/home.html', pokemon=pokemon, pokemon_data=pokemon_data)
+    return render_template('pokemon/home.html', pokemon_data=pokemon_data, all_pokemon=all_pokemon)
 
 
 @app.errorhandler(404)
 def page_not_found(e):
     """Show 404 NOT FOUND page."""
 
-    return render_template('404.html'), 404
+    return render_template('404.html', all_pokemon=all_pokemon), 404
 
 
 ##############################################################################
@@ -62,9 +62,7 @@ def fetch_poke(pokemon_name):
     data = resp.json()
 
     id = data['id']
-    name = data['species']['name']
-    # img = data['sprites']['front_default']
-    # img = data['sprites']['other']['dream_world']['front_default']
+    name = data['name']
     img = data['sprites']['other']['official-artwork']['front_default']
     pokedex_img = data['sprites']['front_default']
     types = data['types']
@@ -118,11 +116,14 @@ def fetch_blurb(pokemon_name):
 @app.route('/pokemon/')
 def get_poke():
     """Handle form submission; return form, showing pokemon info from submission."""
-    
-    search = request.args.get('search')
-    pokemon = fetch_poke(search.lower().replace(' ', '-'))
 
-    return render_template('pokemon/results.html', pokemon=pokemon)
+    search = request.args.get('search').lower().replace(' ', '-')
+    try:
+        pokemon = fetch_poke(search)
+    except requests.exceptions.JSONDecodeError:
+        return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon)
+
+    return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon)
 
 
 @app.route('/pokemon/<pokemon_name>')
@@ -155,9 +156,9 @@ def poke_details(pokemon_name):
     if g.user:        
         pokemon = (Pokemon.query.all())
         faved_pokemon_names = [favorite.name for favorite in g.user.favorites]
-        return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, favs=faved_pokemon_names)
+        return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon, favs=faved_pokemon_names)
 
-    return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data)
+    return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon)
 
 
 ##############################################################################
@@ -291,7 +292,7 @@ def user_show_favorites():
 
     fav_pokemon = [fetch_poke(pokemon.name) for pokemon in g.user.favorites]
 
-    return render_template('user/favorites.html', user=g.user, favorites=fav_pokemon)
+    return render_template('user/favorites.html', user=g.user, favorites=fav_pokemon , all_pokemon=all_pokemon)
 
 
 @app.route('/user/edit', methods=["GET", "POST"])

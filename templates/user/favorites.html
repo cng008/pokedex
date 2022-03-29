@@ -16,7 +16,7 @@
             <p class="id">
                 <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon[0]['id'] }}</span>
             </p>
-            <h4>{{ pokemon[1]['name'].capitalize().replace('-', ' ') }}</h4>
+            <h4>{{ pokemon[1]['name'].title().replace('-', ' ') }}</h4>
             <div class="abilities">
                 {% for ability in pokemon[4]['types'] %}
                 <span class="me-2 badge bg-{% if ability['type']['name'] == 'normal' %}secondary{% elif ability['type']['name'] == 'fire' %}primary{% elif ability['type']['name'] == 'water' %}info{% elif ability['type']['name'] == 'grass' %}success{% elif ability['type']['name'] == 'electric' %}warning{% elif ability['type']['name'] == 'ice' %}info{% elif ability['type']['name'] == 'fighting' %}primary{% elif ability['type']['name'] == 'poison' %}dark{% elif ability['type']['name'] == 'ground' %}warning{% elif ability['type']['name'] == 'flying' %}info{% elif ability['type']['name'] == 'psychic' %}danger{% elif ability['type']['name'] == 'bug' %}success{% elif ability['type']['name'] == 'rock' %}secondary{% elif ability['type']['name'] == 'ghost' %}dark{% elif ability['type']['name'] == 'dark' %}dark{% elif ability['type']['name'] == 'dragon' %}info{% elif ability['type']['name'] == 'steel' %}secondary{% elif ability['type']['name'] == 'fairy' %}light{% elif ability['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ ability['type']['name'] }}</span>

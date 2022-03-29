@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}404: Page Not Found{% endblock %}
+{% block content %}
+
+<div class="no-results">
+    <h2 class="text-center">Search a Pokémon in Pokédex:</h2>
+    {% include "pokemon/search.html" %}
+
+    <h2 class="mt-4">No Pokémon Matched Your Search!</h2>
+    <p><strong>Try these suggestions to find a Pokémon:</strong><p>
+    <ul>
+        <li><p>Type in Pikachu, Bulbasaur, Squirtle, or another Pokémon you're familiar with</p></li>
+        <li><p>Start typing a couple of letters and choose from the list</p></li>
+    </ul>
+</div>
+
+{% endblock %}
