@@ -1,5 +1,5 @@
 <form action="/pokemon/" class="d-flex">
-    <input class="form-control me-sm-2" type="text" name="search" placeholder="Type Pokémon name ('Pikachu', 'Bulbasaur', 'Squirtle')" autocomplete="off" list="pokemon-list" style="height:2em;">
+    <input class="form-control me-sm-2" type="text" name="search" placeholder="Type Pokémon name ('Pikachu', 'Bulbasaur', 'Squirtle')" autocomplete="off" list="pokemon-list" style="height:2em;" required>
     <button class="btn btn-warning search-btn" type="submit"><span class="text-info" style="font-size:18px;">Go!</span></button>
     <datalist id="pokemon-list">
         {% for pokemon in all_pokemon %}

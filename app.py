@@ -117,11 +117,11 @@ def fetch_blurb(pokemon_name):
 def get_poke():
     """Handle form submission; return form, showing pokemon info from submission."""
 
-    search = request.args.get('search').lower().replace(' ', '-')
     try:
+        search = request.args.get('search').lower().replace(' ', '-')
         pokemon = fetch_poke(search)
     except requests.exceptions.JSONDecodeError:
-        return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon, isIndex=True)
+        return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon, search=search, isIndex=True)
 
     return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon, isIndex=True)
 
