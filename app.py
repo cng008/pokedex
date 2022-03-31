@@ -52,6 +52,12 @@ def page_not_found(e):
     return render_template('404.html', all_pokemon=all_pokemon), 404
 
 
+@app.errorhandler(405)
+def page_not_found(e):
+    """Show 404 NOT FOUND page."""
+
+    return render_template('405.html', all_pokemon=all_pokemon), 405
+
 ##############################################################################
 # GENERAL POKEMON SEARCH ROUTES
 
@@ -133,33 +139,37 @@ def poke_details(pokemon_name):
         Check if pokemon is in favorites if user is logged in.
     """
 
-    pokemon_data = fetch_poke(pokemon_name)
-    blurb = fetch_blurb(pokemon_name)
+    try:
+        pokemon_data = fetch_poke(pokemon_name)
+        blurb = fetch_blurb(pokemon_name)
 
-    evolutions_list = fetch_evolutions(pokemon_name)
-    clean_list = []
-    for i in evolutions_list:
-        if i != None:
-            clean_list.append(i)
-    evolutions_data = [fetch_poke(i) for i in clean_list]
+        evolutions_list = fetch_evolutions(pokemon_name)
+        clean_list = []
+        for i in evolutions_list:
+            if i != None:
+                clean_list.append(i)
+        evolutions_data = [fetch_poke(i) for i in clean_list]
 
-    poke_id = pokemon_data[0]['id']
-    name = pokemon_data[1]['name']
+        poke_id = pokemon_data[0]['id']
+        name = pokemon_data[1]['name']
 
-    check_pokemon = Pokemon.query.get(name)
+        check_pokemon = Pokemon.query.get(name)
 
-    if not check_pokemon:
-        add_pokemon = Pokemon(name=name, pokeapi_id=poke_id)
-        db.session.add(add_pokemon)
-        db.session.commit()
+        if not check_pokemon:
+            add_pokemon = Pokemon(name=name, pokeapi_id=poke_id)
+            db.session.add(add_pokemon)
+            db.session.commit()
 
-    if g.user:        
-        pokemon = (Pokemon.query.all())
-        faved_pokemon_names = [favorite.name for favorite in g.user.favorites]
-        return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon, favs=faved_pokemon_names)
+        if g.user:        
+            pokemon = (Pokemon.query.all())
+            faved_pokemon_names = [favorite.name for favorite in g.user.favorites]
+            return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon, favs=faved_pokemon_names)
 
-    return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon)
+        return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon)
 
+    except requests.exceptions.JSONDecodeError:
+        flash("Invalid path.", 'danger')
+        return redirect('/')
 
 ##############################################################################
 # FAVORITES ROUTE
