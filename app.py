@@ -42,7 +42,7 @@ def home_page():
     pokemon = [i for i in requests.get(f'{API_BASE_URL}/pokemon/?limit=15').json()['results']]
     pokemon_data = [fetch_poke(i['name']) for i in pokemon] # https://medium.com/@sergio13prez/fetching-them-all-poke-api-62ca580981a2
     
-    return render_template('pokemon/home.html', pokemon_data=pokemon_data, all_pokemon=all_pokemon)
+    return render_template('pokemon/home.html', pokemon_data=pokemon_data, all_pokemon=all_pokemon, isIndex=True)
 
 
 @app.errorhandler(404)
@@ -121,9 +121,9 @@ def get_poke():
     try:
         pokemon = fetch_poke(search)
     except requests.exceptions.JSONDecodeError:
-        return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon)
+        return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon, isIndex=True)
 
-    return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon)
+    return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon, isIndex=True)
 
 
 @app.route('/pokemon/<pokemon_name>')

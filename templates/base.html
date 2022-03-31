@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
     <link rel="stylesheet" href="https://bootswatch.com/5/journal/bootstrap.min.css">
     <link rel="stylesheet" href="/static/stylesheets/app.css">
@@ -11,7 +11,7 @@
     <link rel="icon" type="image/x-icon" href="/static/images/pokeball.png">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary">
         <div class="container-fluid">
             <span class="navbar-brand text-warning" href="">Pokédex</span>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,9 +22,6 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/favorites">Favorites</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/about">About</a>
@@ -47,15 +44,13 @@
                     </li>
                     {% endif %}
                 </ul>
-                {% include "pokemon/search.html" %}
+                {% if isIndex != True %}
+                    {% include "pokemon/search.html" %}
+                {% endif %}
             </div>
         </div>
     </nav>
-    
-    <div class="loader">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%;"></div>
-      </div>
-      
+          
     <div class="container mt-4">
         <!-- alert when user/post has been added/deleted/info edited -->
         {% for category, msg in get_flashed_messages(with_categories=true) %}
@@ -65,9 +60,7 @@
         <div class="my-4">{% block content %}BODY CONTENT GOES HERE{% endblock %}</div>
     </div>
 
-    <script src="https://unpkg.com/jquery"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </body>
 
 <footer id="footer" class="bg-primary text-light py-3">

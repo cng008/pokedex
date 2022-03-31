@@ -6,12 +6,14 @@
     <h2 class="text-center">Search a Pokémon in Pokédex:</h2>
     {% include "pokemon/search.html" %}
 
-    <h2 class="mt-4">No Pokémon Matched Your Search!</h2>
-    <p><strong>Try these suggestions to find a Pokémon:</strong><p>
-    <ul>
-        <li><p>Type in Pikachu, Bulbasaur, Squirtle, or another Pokémon you're familiar with</p></li>
-        <li><p>Start typing a couple of letters and choose from the list</p></li>
-    </ul>
+    <div class="mt-4 text-primary border-primary" style="border-radius:25px;border:px solid;padding:15px;">
+        <h2 class="mt-4">No Pokémon Matched Your Search!</h2>
+        <p><strong>Try these suggestions to find a Pokémon:</strong><p>
+        <ul>
+            <li><p>Type in Pikachu, Bulbasaur, Squirtle, or another Pokémon you're familiar with</p></li>
+            <li><p>Start typing a couple of letters and choose from the list</p></li>
+        </ul>
+    </div>
 </div>
 
 {% endblock %}
