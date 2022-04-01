@@ -37,7 +37,7 @@ API_BASE_URL = 'https://pokeapi.co/api/v2'
 
 @app.route('/')
 def home_page():
-    """Homepage. See first 20 pokemon."""
+    """Homepage. See first 15 pokemon."""
 
     pokemon = [i for i in requests.get(f'{API_BASE_URL}/pokemon/?limit=15').json()['results']]
     pokemon_data = [fetch_poke(i['name']) for i in pokemon] # https://medium.com/@sergio13prez/fetching-them-all-poke-api-62ca580981a2
@@ -85,8 +85,9 @@ def fetch_evolutions(pokemon_name):
         Not every pokemon will have more than one evolution, so a catch/error accounts for that.
     """
 
-    get_url = requests.get(f"{API_BASE_URL}/pokemon-species/{pokemon_name}").json()['evolution_chain']['url']
-    chain = requests.get(get_url).json()['chain']
+    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
+    get_evolution_url = requests.get(get_species_url).json()['evolution_chain']['url']
+    chain = requests.get(get_evolution_url).json()['chain']
 
     first_evol = chain['species']['name']
     try: 
@@ -110,7 +111,8 @@ def fetch_evolutions(pokemon_name):
 def fetch_blurb(pokemon_name):
     """Generates a random fact about the pokemon on page load."""
     
-    data = requests.get(f"{API_BASE_URL}/pokemon-species/{pokemon_name}").json()['flavor_text_entries']
+    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
+    data = requests.get(get_species_url).json()['flavor_text_entries']
     blurbs = []
     for i in data:
         if i['language']['name'] == 'en':
@@ -124,8 +126,8 @@ def get_poke():
     """Handle form submission; return form, showing pokemon info from submission."""
 
     try:
-        search = request.args.get('search').lower().replace(' ', '-')
-        pokemon = fetch_poke(search)
+        search = request.args.get('search')
+        pokemon = fetch_poke(search.lower().replace(' ', '-'))
     except requests.exceptions.JSONDecodeError:
         return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon, search=search, isIndex=True)
 
@@ -144,11 +146,11 @@ def poke_details(pokemon_name):
         blurb = fetch_blurb(pokemon_name)
 
         evolutions_list = fetch_evolutions(pokemon_name)
-        clean_list = []
-        for i in evolutions_list:
-            if i != None:
-                clean_list.append(i)
-        evolutions_data = [fetch_poke(i) for i in clean_list]
+        clean_list = [i for i in evolutions_list if i != None]
+        if len(clean_list) > 1:
+            evolutions_data = [fetch_poke(i) for i in clean_list]
+        else:
+            evolutions_data = [pokemon_data]
 
         poke_id = pokemon_data[0]['id']
         name = pokemon_data[1]['name']
@@ -169,7 +171,8 @@ def poke_details(pokemon_name):
 
     except requests.exceptions.JSONDecodeError:
         flash("Invalid path.", 'danger')
-        return redirect('/')
+        return render_template('404.html', all_pokemon=all_pokemon)
+
 
 ##############################################################################
 # FAVORITES ROUTE
