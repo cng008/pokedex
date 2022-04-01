@@ -53,8 +53,8 @@ def page_not_found(e):
 
 
 @app.errorhandler(405)
-def page_not_found(e):
-    """Show 404 NOT FOUND page."""
+def method_not_allowed(e):
+    """Show 405 METHOD NOT ALLOWED page."""
 
     return render_template('405.html', all_pokemon=all_pokemon), 405
 
@@ -181,6 +181,11 @@ def poke_details(pokemon_name):
 def add_favorite(pokemon_name):
     """Toggle a liked pokemon for the currently-logged-in user."""
 
+    if CURR_USER_KEY not in session:
+        flash("Please make an account to favorite a pokémon.", "primary")
+        # return redirect(request.referrer)
+        return redirect("/")
+
     favorited_poke = Pokemon.query.get_or_404(pokemon_name)
     user_favs = g.user.favorites
 
@@ -191,8 +196,8 @@ def add_favorite(pokemon_name):
 
     db.session.commit()
 
-    return redirect(request.referrer) # https://stackoverflow.com/a/61902927
-    # return redirect(f"pokemon/{pokemon_name}") # use this instead for testing
+    # return redirect(request.referrer) # https://stackoverflow.com/a/61902927
+    return redirect("/") # use this instead for testing
 
 
 ##############################################################################
@@ -300,7 +305,7 @@ def user_show_favorites():
     """
 
     if CURR_USER_KEY not in session:
-        flash("Access unauthorized.", "primary")
+        flash("Access unauthorized. You need to login first.", "primary")
         return redirect("/")
 
     fav_pokemon = [fetch_poke(pokemon.name) for pokemon in g.user.favorites]

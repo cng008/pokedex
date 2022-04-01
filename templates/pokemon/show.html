@@ -7,8 +7,6 @@
 
             <div class="pokemon-id row m-4">
                 <h1 class="text-center mb-5">{{ pokemon[1]['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon[0]['id'] }}</span></h1>
-                
-                {% if g.user %}
                 <div style="display:flex;justify-content:end;margin-top:-5em; margin-left:-2em;">
                     <form method="POST" action="/pokemon/{{ pokemon[1]['name'] }}/fav" id="pokemon-like">
                     <button class="
@@ -19,8 +17,7 @@
                         <i class="fa fa-heart" style="font-size:35px;color:{% if pokemon[1]['name'] in favs %}red{% else %}gray{% endif %}"></i>
                     </button>
                     </form>
-                {% endif %}
-
+                </div>
             </div>
 
             <div class="row mx-auto justify-content-center">

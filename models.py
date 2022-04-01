@@ -22,7 +22,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(320), nullable=False, unique=True)
-    username = db.Column(db.String(50), nullable=True, unique=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
     location = db.Column(db.String(85), nullable=True)
     profile_img_url = db.Column(db.Text, nullable=True, default=DEFAULT_AVATAR_IMG)
@@ -31,7 +31,7 @@ class User(db.Model):
     favorites = db.relationship('Pokemon', secondary='favorites')
 
     def __repr__(self):
-        return f"<User #{self.id}: {self.username}, {self.email}, {self.account_creation}>"
+        return f"<User #{self.id}: {self.username}, {self.email}>"
 
     @classmethod
     def signup(cls, email, username, password):
