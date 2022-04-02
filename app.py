@@ -22,7 +22,7 @@ app = Flask(__name__)
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'shhhhhh'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "shhhhhh")
 app.config['SQLALCHEMY_ECHO'] = True
 
 connect_db(app)
@@ -58,147 +58,6 @@ def method_not_allowed(e):
 
     return render_template('405.html', all_pokemon=all_pokemon), 405
 
-##############################################################################
-# GENERAL POKEMON SEARCH ROUTES
-
-def fetch_poke(pokemon_name):
-    """Return {id, name, image, types} from PokeApi for given search term."""
-
-    resp = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}")
-    data = resp.json()
-
-    id = data['id']
-    name = data['name']
-    img = data['sprites']['other']['official-artwork']['front_default']
-    pokedex_img = data['sprites']['front_default']
-    types = data['types']
-    base_xp = data['base_experience']
-    height = data['height']
-    weight = data['weight']
-    abilities = data['abilities']
-
-    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types},{'base_xp':base_xp},{'height':height},{'weight':weight},{'abilities':abilities}
-
-
-def fetch_evolutions(pokemon_name):
-    """Return all pokemon evolutions (if exists) from PokeApi for given search term.
-        Not every pokemon will have more than one evolution, so a catch/error accounts for that.
-    """
-
-    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
-    get_evolution_url = requests.get(get_species_url).json()['evolution_chain']['url']
-    chain = requests.get(get_evolution_url).json()['chain']
-
-    first_evol = chain['species']['name']
-    try: 
-        second_evol = chain['evolves_to'][0]['species']['name']
-    except IndexError:
-        second_evol = None
-
-    try: 
-        third_evol = chain['evolves_to'][0]['evolves_to'][0]['species']['name']
-    except IndexError:
-        third_evol = None
-
-    try: 
-        fourth_evol = chain['evolves_to'][0]['evolves_to'][0]['evolves_to'][0]['species']['name']
-    except IndexError:
-        fourth_evol = None
-
-    return [first_evol,second_evol,third_evol,fourth_evol]
-
-
-def fetch_blurb(pokemon_name):
-    """Generates a random fact about the pokemon on page load."""
-    
-    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
-    data = requests.get(get_species_url).json()['flavor_text_entries']
-    blurbs = []
-    for i in data:
-        if i['language']['name'] == 'en':
-            blurbs.append(i['flavor_text'])
-
-    return random.choice(blurbs)
-
-
-@app.route('/pokemon/')
-def get_poke():
-    """Handle form submission; return form, showing pokemon info from submission."""
-
-    try:
-        search = request.args.get('search')
-        pokemon = fetch_poke(search.lower().replace(' ', '-'))
-    except requests.exceptions.JSONDecodeError:
-        return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon, search=search, isIndex=True)
-
-    return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon, isIndex=True)
-
-
-@app.route('/pokemon/<pokemon_name>')
-def poke_details(pokemon_name):
-    """View details page of pokemon.
-        Includes evolutions of the pokemon.
-        Check if pokemon is in favorites if user is logged in.
-    """
-
-    try:
-        pokemon_data = fetch_poke(pokemon_name)
-        blurb = fetch_blurb(pokemon_name)
-
-        evolutions_list = fetch_evolutions(pokemon_name)
-        clean_list = [i for i in evolutions_list if i != None]
-        if len(clean_list) > 1:
-            evolutions_data = [fetch_poke(i) for i in clean_list]
-        else:
-            evolutions_data = [pokemon_data]
-
-        poke_id = pokemon_data[0]['id']
-        name = pokemon_data[1]['name']
-
-        check_pokemon = Pokemon.query.get(name)
-
-        if not check_pokemon:
-            add_pokemon = Pokemon(name=name, pokeapi_id=poke_id)
-            db.session.add(add_pokemon)
-            db.session.commit()
-
-        if g.user:        
-            pokemon = (Pokemon.query.all())
-            faved_pokemon_names = [favorite.name for favorite in g.user.favorites]
-            return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon, favs=faved_pokemon_names)
-
-        return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon)
-
-    except requests.exceptions.JSONDecodeError:
-        flash("Invalid path.", 'danger')
-        return render_template('404.html', all_pokemon=all_pokemon)
-
-
-##############################################################################
-# FAVORITES ROUTE
-
-@app.route('/pokemon/<pokemon_name>/fav', methods=['POST'])
-def add_favorite(pokemon_name):
-    """Toggle a liked pokemon for the currently-logged-in user."""
-
-    if CURR_USER_KEY not in session:
-        flash("Please make an account to favorite a pokémon.", "primary")
-        # return redirect(request.referrer)
-        return redirect("/")
-
-    favorited_poke = Pokemon.query.get_or_404(pokemon_name)
-    user_favs = g.user.favorites
-
-    if favorited_poke in user_favs:
-        g.user.favorites = [fav for fav in user_favs if fav != favorited_poke]
-    else:
-        g.user.favorites.append(favorited_poke)
-
-    db.session.commit()
-
-    # return redirect(request.referrer) # https://stackoverflow.com/a/61902927
-    return redirect("/") # use this instead for testing
-
 
 ##############################################################################
 # USER SIGNUP/LOGIN/LOGOUT
@@ -224,7 +83,7 @@ def do_login(user):
 
 
 def do_logout():
-    """Logout user."""
+    """Log out user."""
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
@@ -359,6 +218,152 @@ def delete_user():
     db.session.commit()
 
     return redirect("/")
+
+
+##############################################################################
+# GENERAL POKEMON SEARCH ROUTES
+
+def fetch_poke(pokemon_name):
+    """Return {id, name, image, types, other statistics} from PokeApi for given search term."""
+
+    resp = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}")
+    data = resp.json()
+
+    id = data['id']
+    name = data['name']
+    img = data['sprites']['other']['official-artwork']['front_default']
+    pokedex_img = data['sprites']['front_default']
+    types = data['types']
+    base_xp = data['base_experience']
+    height = data['height']
+    weight = data['weight']
+    abilities = data['abilities']
+
+    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types},{'base_xp':base_xp},{'height':height},{'weight':weight},{'abilities':abilities}
+
+
+def fetch_evolutions(pokemon_name):
+    """Return all pokemon evolutions (if exists) from PokeApi for given search term.
+        Not every pokemon will have more than one evolution, so a catch/error accounts for that.
+    """
+
+    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
+    get_evolution_url = requests.get(get_species_url).json()['evolution_chain']['url']
+    chain = requests.get(get_evolution_url).json()['chain']
+
+    first_evol = chain['species']['name']
+    try: 
+        second_evol = chain['evolves_to'][0]['species']['name']
+    except IndexError:
+        second_evol = None
+
+    try: 
+        third_evol = chain['evolves_to'][0]['evolves_to'][0]['species']['name']
+    except IndexError:
+        third_evol = None
+
+    try: 
+        fourth_evol = chain['evolves_to'][0]['evolves_to'][0]['evolves_to'][0]['species']['name']
+    except IndexError:
+        fourth_evol = None
+
+    return [first_evol,second_evol,third_evol,fourth_evol]
+
+
+def fetch_blurb(pokemon_name):
+    """Generates a random fact in English from PokeApi about the pokemon."""
+    
+    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
+    data = requests.get(get_species_url).json()['flavor_text_entries']
+    blurbs = []
+    for i in data:
+        if i['language']['name'] == 'en':
+            blurbs.append(i['flavor_text'])
+
+    return random.choice(blurbs)
+
+
+@app.route('/pokemon/')
+def get_poke():
+    """Handle form submission; return form, showing pokemon info from submission.
+    isIndex=True sets a variable so that we can pinpoint the route to only show search in nav bar if there is not already one on the page.
+    """
+
+    try:
+        search = request.args.get('search')
+        pokemon = fetch_poke(search.lower().replace(' ', '-'))
+    except requests.exceptions.JSONDecodeError:
+        return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon, search=search, isIndex=True)
+
+    return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon, isIndex=True)
+
+
+@app.route('/pokemon/<pokemon_name>')
+def poke_details(pokemon_name):
+    """View details page of pokemon.
+        Includes evolutions and random fact of the pokemon.
+        Check if pokemon is in favorites if user is logged in.
+    """
+
+    try:
+        pokemon_data = fetch_poke(pokemon_name)
+        blurb = fetch_blurb(pokemon_name)
+
+        evolutions_list = fetch_evolutions(pokemon_name)
+        clean_list = [i for i in evolutions_list if i != None]
+        if len(clean_list) > 1:
+            evolutions_data = [fetch_poke(i) for i in clean_list]
+        else:
+            evolutions_data = [pokemon_data]
+
+        poke_id = pokemon_data[0]['id']
+        name = pokemon_data[1]['name']
+
+        check_pokemon = Pokemon.query.get(name)
+
+        if not check_pokemon:
+            add_pokemon = Pokemon(name=name, pokeapi_id=poke_id)
+            db.session.add(add_pokemon)
+            db.session.commit()
+
+        if g.user:        
+            pokemon = (Pokemon.query.all())
+            faved_pokemon_names = [favorite.name for favorite in g.user.favorites]
+            return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon, favs=faved_pokemon_names)
+
+        return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon)
+
+    except requests.exceptions.JSONDecodeError:
+        flash("Invalid path.", 'danger')
+        return render_template('404.html', all_pokemon=all_pokemon)
+
+
+##############################################################################
+# FAVORITES ROUTE
+
+@app.route('/pokemon/<pokemon_name>/fav', methods=['POST'])
+def add_favorite(pokemon_name):
+    """Toggle a liked pokemon for the currently-logged-in user.
+    Only allow favorite to work if a user is in the session.
+    """
+
+    if CURR_USER_KEY not in session:
+        flash("Please make an account to favorite a pokémon.", "primary")
+        return redirect(request.referrer)
+        # return redirect("/") # use this instead for testing
+
+    favorited_poke = Pokemon.query.get_or_404(pokemon_name)
+    user_favs = g.user.favorites
+
+    if favorited_poke in user_favs:
+        g.user.favorites = [fav for fav in user_favs if fav != favorited_poke]
+    else:
+        g.user.favorites.append(favorited_poke)
+
+    db.session.commit()
+
+    return redirect(request.referrer) # https://stackoverflow.com/a/61902927
+    # return redirect("/") # use this instead for testing
 
 
 ##############################################################################

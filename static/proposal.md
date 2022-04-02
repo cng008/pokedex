@@ -19,6 +19,30 @@ The main source of the data will be provided by the [PokeApi](https://pokeapi.co
 <img src="images/schema.png" alt="drawing" width="500"/>
 <!-- ![db schema](images/schema.png) -->
 
+<!-- // Creating tables
+Table users as u {
+  id int [pk] // auto-increment
+  email text
+  username text
+  location text
+  password text
+  datetime_created datetime
+}
+
+Table favorites as f {
+  user_id int
+  pokemon_id text
+ }
+
+Table pokemon as p {
+  id int
+  name text
+ }
+// Creating references
+// > many-to-one; < one-to-many; - one-to-one
+Ref: u.id < f.user_id
+Ref: p.id < f.pokemon_id -->
+
 ```py
 class User(db.Model):
 “””User.”””

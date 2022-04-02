@@ -109,6 +109,7 @@ class UserViewTestCase(TestCase):
 
 
     def test_add_favorite(self):
+        """uncomment 'redirect(request.referrer)' in the favorites route in app.py before running this."""
         self.setup_favorites()
        
         # Since we need to change the session to mimic logging in,
@@ -131,7 +132,9 @@ class UserViewTestCase(TestCase):
 
 
     def test_remove_favorite(self):
-        """Check to see if the pokemon is favorited by the user. If it is, then we can unfavorite it."""
+        """uncomment 'redirect(request.referrer)' in the favorites route in app.py before running this.
+            Check to see if the pokemon is favorited by the user. If it is, then we can unfavorite it.
+        """
         self.setup_favorites()
 
         # get the favorited pokemon 
