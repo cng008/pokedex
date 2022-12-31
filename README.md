@@ -35,6 +35,8 @@
 
 ## **Overview**
 
+The number of Pokémon GO players has been steady since its launch in 2016 with [almost 2 million daily active loyal users](https://www.statista.com/statistics/604551/pokemon-go-daily-active-users-in-europe/).
+
 The goal of this app is to provide users a method to explore a well-documented archive of Pokémon.
 
 With so many Pokémon, this application provides users a way to easily search any Pokémon without any extra frills or ads. Details for the individual Pokémon include their types, moves, and other statistics.
@@ -54,6 +56,10 @@ With so many Pokémon, this application provides users a way to easily search an
 > Users can click on a Pokémon to see its details.
 
 [<img src="static/images/md/pokemon_details.png" width="700"/>](static/images/md/pokemon_details.png)
+
+## NEW FEATURE:
+
+> try catching a pokemon (clicking on the sprite image) in the pokemon details page
 
 ---
 
@@ -79,6 +85,8 @@ This project was made using the following technologies:
 - [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML)
 - [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 - [Bootstrap 5](https://getbootstrap.com/docs/5.1/getting-started/introduction/)
+- [Font Awesome](https://fontawesome.com/)
+- [PostgreSQL](https://www.postgresql.org)
 - [Flask](https://flask.palletsprojects.com/en/2.1.x/)
 - [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/en/2.x/)
 - [Flask-WTForms](https://flask-wtf.readthedocs.io/en/1.0.x/)
