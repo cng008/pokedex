@@ -1,29 +1,31 @@
 {% extends 'base.html' %}
-{% block title %}{{ pokemon[1]['name'].title().replace('-', ' ') }}{% endblock %}
+{% block title %}{{ pokemon['name'].title().replace('-', ' ') }}{% endblock %}
 {% block content %}
 
     <section class="container" style="width:70fr">
         <div class="pokemon-card card border-light">
-
             <div class="pokemon-id row m-4">
-                <h1 class="text-center mb-5">{{ pokemon[1]['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon[0]['id'] }}</span></h1>
-                <div style="display:flex;justify-content:end;margin-top:-5em; margin-left:-2em;">
-                    <form method="POST" action="/pokemon/{{ pokemon[1]['name'] }}/fav" id="pokemon-like">
-                    <button class="
-                        btn 
-                        btn-sm 
-                        {{'red' if pokemon[1]['name'] in favs else 'gray'}}"
-                    >
-                        <i class="fa fa-heart" style="font-size:35px;color:{% if pokemon[1]['name'] in favs %}red{% else %}gray{% endif %}"></i>
-                    </button>
-                    </form>
+                <div class="header">
+                    <img src="{{ pokemon['pokedex_img'] }}" alt="{{ pokemon['name'] }} sprite" id="sprite">
+                    <h1 class="text-center">{{ pokemon['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon['id'] }}</span></h1>
+                    <div id="heart">
+                        <form method="POST" action="/pokemon/{{ pokemon['name'] }}/fav" id="pokemon-like">
+                            <button class="
+                            btn 
+                            btn-sm 
+                            {{'red' if pokemon['name'] in favs else 'gray'}}"
+                            >
+                            <i class="fa fa-heart" style="font-size:35px;color:{% if pokemon['name'] in favs %}red{% else %}gray{% endif %}"></i>
+                        </button>
+                        </form>
+                    </div>                  
                 </div>
             </div>
 
             <div class="row mx-auto justify-content-center">
                 <div class="pokemon-image col-sm-11 col-md-7">
                     <figure>
-                        <img src="{{ pokemon[2]['image'] }}" alt="{{ pokemon[1]['name'] }} image" class="image img-fluid mx-auto d-block" style="border-radius:5px;background-color: rgb(242, 242, 242);">
+                        <img src="{{ pokemon['image'] }}" alt="{{ pokemon['name'] }} image" class="image img-fluid mx-auto d-block" style="border-radius:5px;background-color: rgb(242, 242, 242);">
                     </figure>
                 </div>
 
@@ -32,25 +34,25 @@
                     <div class="stats row text-white bg-info mb-3">
                         <div class="col-5 mx-auto mb-4">
                             <h5>Height</h5>
-                            <p>{{ pokemon[6]['height'] }} ft</p>
+                            <p>{{ pokemon['height'] }} ft</p>
                         </div>
                         <div class="col-5 mx-auto mb-4">
                             <h5>Base XP</h5>
-                            <p>{{ pokemon[5]['base_xp'] }} XP</p>  
+                            <p>{{ pokemon['base_xp'] }} XP</p>  
                         </div>
                         <div class="col-5 mx-auto">
                             <h5>Weight</h5>
-                            <p>{{ pokemon[7]['weight'] }} lbs</p>  
+                            <p>{{ pokemon['weight'] }} lbs</p>  
                         </div>
                         <div class="col-5 mx-auto">
                             <h5>Abilities</h5>
-                            <p>{% for ability in pokemon[8]['abilities'] %}{{ability['ability']['name']}}<br>{% endfor %}</p>  
+                            <p>{% for ability in pokemon['abilities'] %}{{ability['ability']['name']}}<br>{% endfor %}</p>  
                         </div>
                     </div>
                     
                     <h3 class="my-4">Type</h3>
                     <div class="abilities-lg">
-                        {% for type in pokemon[4]['types'] %}
+                        {% for type in pokemon['types'] %}
                         <span class="detail-type mb-3 badge bg-{% if  type['type']['name'] == 'normal' %}secondary{% elif  type['type']['name'] == 'fire' %}primary{% elif  type['type']['name'] == 'water' %}info{% elif  type['type']['name'] == 'grass' %}success{% elif  type['type']['name'] == 'electric' %}warning{% elif  type['type']['name'] == 'ice' %}info{% elif  type['type']['name'] == 'fighting' %}primary{% elif  type['type']['name'] == 'poison' %}dark{% elif  type['type']['name'] == 'ground' %}warning{% elif  type['type']['name'] == 'flying' %}info{% elif  type['type']['name'] == 'psychic' %}danger{% elif  type['type']['name'] == 'bug' %}success{% elif  type['type']['name'] == 'rock' %}secondary{% elif  type['type']['name'] == 'ghost' %}dark{% elif  type['type']['name'] == 'dark' %}dark{% elif  type['type']['name'] == 'dragon' %}info{% elif  type['type']['name'] == 'steel' %}secondary{% elif  type['type']['name'] == 'fairy' %}light{% elif  type['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ type['type']['name'] }}</span>
                         {% endfor %}
                     </div>
@@ -62,15 +64,15 @@
             <small class="text-muted mx-4">This pokemon does not evolve</small>
             <div class="col">
                 <div class="mx-3 my-4 text-center" style="width: 18rem;">
-                    <a href="/pokemon/{{ pokemon[1]['name'] }}" class="text-decoration-none text-dark">
+                    <a href="/pokemon/{{ pokemon['name'] }}" class="text-decoration-none text-dark">
                         <div class="m-3 my-4">
                             <figure>
-                                <img src="{{ pokemon[2]['image'] }}" alt="{{ pokemon[1]['name'] }} image"  title="{{ pokemon[1]['name'] }}" class="image-fluid" style="border-radius:25em;max-height:15em;background-color:rgb(242, 242, 242);">
+                                <img src="{{ pokemon['image'] }}" alt="{{ pokemon['name'] }} image"  title="{{ pokemon['name'] }}" class="image-fluid" style="border-radius:25em;max-height:15em;background-color:rgb(242, 242, 242);">
                             </figure>
                             <div class="pokemon-info row">
-                                <h4>{{ pokemon[1]['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon[0]['id'] }}</span></h4>
+                                <h4>{{ pokemon['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon['id'] }}</span></h4>
                                 <div class="abilities">
-                                    {% for ability in pokemon[4]['types'] %}
+                                    {% for ability in pokemon['types'] %}
                                     <span style="padding:5px 30px;" class="me-2 badge bg-{% if ability['type']['name'] == 'normal' %}secondary{% elif ability['type']['name'] == 'fire' %}primary{% elif ability['type']['name'] == 'water' %}info{% elif ability['type']['name'] == 'grass' %}success{% elif ability['type']['name'] == 'electric' %}warning{% elif ability['type']['name'] == 'ice' %}info{% elif ability['type']['name'] == 'fighting' %}primary{% elif ability['type']['name'] == 'poison' %}dark{% elif ability['type']['name'] == 'ground' %}warning{% elif ability['type']['name'] == 'flying' %}info{% elif ability['type']['name'] == 'psychic' %}danger{% elif ability['type']['name'] == 'bug' %}success{% elif ability['type']['name'] == 'rock' %}secondary{% elif ability['type']['name'] == 'ghost' %}dark{% elif ability['type']['name'] == 'dark' %}dark{% elif ability['type']['name'] == 'dragon' %}info{% elif ability['type']['name'] == 'steel' %}secondary{% elif ability['type']['name'] == 'fairy' %}light{% elif ability['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ ability['type']['name'] }}</span>
                                     {% endfor %}
                                 </div>
@@ -85,15 +87,15 @@
                 {% for evolution in evolutions %}
                 <div class="col">
                     <div class="mx-3 my-4 text-center">
-                        <a href="/pokemon/{{ evolution[1]['name'] }}" class="text-decoration-none text-dark">
+                        <a href="/pokemon/{{ evolution['name'] }}" class="text-decoration-none text-dark">
                             <div class="m-3 my-4">
                                 <figure>
-                                    <img src="{{ evolution[2]['image'] }}" alt="{{ evolution[1]['name'] }} image" class="image image-fluid" title="{{ evolution[1]['name'] }}" style="border-radius:25em;max-height:15em;background-color:rgb(242, 242, 242);">
+                                    <img src="{{ evolution['image'] }}" alt="{{ evolution['name'] }} image" class="image image-fluid" title="{{ evolution['name'] }}" style="border-radius:25em;max-height:15em;background-color:rgb(242, 242, 242);">
                                 </figure>
                             <div class="pokemon-info row">
-                                <h4>{{ evolution[1]['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ evolution[0]['id'] }}</span></h4>
+                                <h4>{{ evolution['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ evolution['id'] }}</span></h4>
                                 <div class="abilities">
-                                    {% for ability in evolution[4]['types'] %}
+                                    {% for ability in evolution['types'] %}
                                     <span style="padding:5px 30px;" class="me-2 badge bg-{% if ability['type']['name'] == 'normal' %}secondary{% elif ability['type']['name'] == 'fire' %}primary{% elif ability['type']['name'] == 'water' %}info{% elif ability['type']['name'] == 'grass' %}success{% elif ability['type']['name'] == 'electric' %}warning{% elif ability['type']['name'] == 'ice' %}info{% elif ability['type']['name'] == 'fighting' %}primary{% elif ability['type']['name'] == 'poison' %}dark{% elif ability['type']['name'] == 'ground' %}warning{% elif ability['type']['name'] == 'flying' %}info{% elif ability['type']['name'] == 'psychic' %}danger{% elif ability['type']['name'] == 'bug' %}success{% elif ability['type']['name'] == 'rock' %}secondary{% elif ability['type']['name'] == 'ghost' %}dark{% elif ability['type']['name'] == 'dark' %}dark{% elif ability['type']['name'] == 'dragon' %}info{% elif ability['type']['name'] == 'steel' %}secondary{% elif ability['type']['name'] == 'fairy' %}light{% elif ability['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ ability['type']['name'] }}</span>
                                     {% endfor %}
                                 </div>

@@ -5,22 +5,22 @@
 <div class="row">
     <h2 class="text-center">Search a Pokémon in Pokédex:</h2>
     {% include "pokemon/search.html" %}
-
+{{pokemon_data}}
     <section class="results row d-flex justify-content-center">
         {% for pokemon in pokemon_data %}
         <div class="card col-xl-2 col-lg-3 col-md-3 col-sm-5 mx-3 my-4 border-light">
-            <a href="/pokemon/{{ pokemon[1]['name'] }}" class="text-decoration-none text-dark">
+            <a href="/pokemon/{{ pokemon['name'] }}" class="text-decoration-none text-dark">
                 <div class="m-3 my-4">
                     <figure>
-                        <img src="{{ pokemon[2]['image'] }}" alt="{{ pokemon[1]['name'] }} image" title="{{ pokemon[1]['name'] }}" class="image img-fluid" style="border-radius:5px;background-color:rgb(242, 242, 242);">
+                        <img src="{{ pokemon['image'] }}" alt="{{ pokemon['name'] }} image" title="{{ pokemon['name'] }}" class="image img-fluid" style="border-radius:5px;background-color:rgb(242, 242, 242);">
                     </figure>
                 <div class="pokemon-info">
                     <p class="id">
-                        <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon[0]['id'] }}</span>
+                        <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon['id'] }}</span>
                     </p>
-                    <h4>{{ pokemon[1]['name'].title().replace('-', ' ') }}</h4>
+                    <h4>{{ pokemon['name'].title().replace('-', ' ') }}</h4>
                     <div class="abilities">
-                        {% for ability in pokemon[4]['types'] %}
+                        {% for ability in pokemon['types'] %}
                         <span class="me-2 badge bg-{% if ability['type']['name'] == 'normal' %}secondary{% elif ability['type']['name'] == 'fire' %}primary{% elif ability['type']['name'] == 'water' %}info{% elif ability['type']['name'] == 'grass' %}success{% elif ability['type']['name'] == 'electric' %}warning{% elif ability['type']['name'] == 'ice' %}info{% elif ability['type']['name'] == 'fighting' %}primary{% elif ability['type']['name'] == 'poison' %}dark{% elif ability['type']['name'] == 'ground' %}warning{% elif ability['type']['name'] == 'flying' %}info{% elif ability['type']['name'] == 'psychic' %}danger{% elif ability['type']['name'] == 'bug' %}success{% elif ability['type']['name'] == 'rock' %}secondary{% elif ability['type']['name'] == 'ghost' %}dark{% elif ability['type']['name'] == 'dark' %}dark{% elif ability['type']['name'] == 'dragon' %}info{% elif ability['type']['name'] == 'steel' %}secondary{% elif ability['type']['name'] == 'fairy' %}light{% elif ability['type']['name'] == 'shadow' %}dark{% else %}secondary{% endif %}">{{ ability['type']['name'] }}</span>
                         {% endfor %}
                     </div>

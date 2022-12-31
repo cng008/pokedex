@@ -243,90 +243,90 @@ def delete_user():
 # GENERAL POKEMON SEARCH ROUTES
 
 def fetch_pokemon_data(pokemon_name):
-    """Return {id, name, image, types, other statistics} from PokeApi for given search term."""
-    try:
-        res = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}")
-        data = res.json()
+    """Return data for the given pokemon from PokeApi."""
 
-        id = data['id']
-        name = data['name']
-        img = data['sprites']['other']['official-artwork']['front_default']
-        pokedex_img = data['sprites']['front_default']
-        types = data['types']
-        base_xp = data['base_experience']
-        height = data['height']
-        weight = data['weight']
-        abilities = data['abilities']
-        pokedex_img_shiny = data['sprites']['front_shiny']
+    def fetch_data(name):
+        """Fetch data for a single pokemon."""
+        try:
+            res = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}")
+            return res.json()
+        except Exception as e:
+            # Log the exception and return an empty dictionary
+            print(f'Error fetching pokemon data: {e}')
+            return {}
 
-        return {'id': id}, {'name': name}, {'image': img}, {'pokedex_img': pokedex_img}, {'types': types}, {'base_xp': base_xp}, {'height': height}, {'weight': weight}, {'abilities': abilities}, {'pokedex_img_shiny': pokedex_img_shiny}
+    data = fetch_data(pokemon_name)
+    pokemon = {
+        'id': data['id'],
+        'name': data['name'],
+        'image': data['sprites']['other']['official-artwork']['front_default'],
+        'pokedex_img': data['sprites']['front_default'],
+        'types': data['types'],
+        'base_xp': data['base_experience'],
+        'height': data['height'],
+        'weight': data['weight'],
+        'abilities': data['abilities'],
+        'pokedex_img_shiny': data['sprites']['front_shiny'],
+    }
 
-    except Exception as e:
-        # Log the exception and return an empty dictionary
-        print(f'Error fetching pokemon data: {e}')
-        return {}
+    return pokemon
 
 
 def fetch_evolutions(pokemon_name):
-    """Return all pokemon evolutions (if exists) from PokeApi for given search term.
+    """Return a pokemon's evolutions (if exists) for given search term.
         Not every pokemon will have more than one evolution, so a catch/error accounts for that.
     """
 
-    get_species_url = requests.get(
-        f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
-    get_evolution_url = requests.get(get_species_url).json()[
-        'evolution_chain']['url']
-    chain = requests.get(get_evolution_url).json()['chain']
+    def fetch_chain_data(name):
+        """Fetch json data for a single pokemon's evolution chain."""
+        try:
+            res = requests.get(f'{API_BASE_URL}/pokemon/{name}')
+            species_url = res.json()['species']['url']
+            res = requests.get(species_url)
+            evolution_url = res.json()['evolution_chain']['url']
+            res = requests.get(evolution_url)
+            return res.json()['chain']
+        except Exception as e:
+            # Log the exception and return an empty dictionary
+            print(f'Error fetching evolution data: {e}')
+            return {}
+    evolution_chain = fetch_chain_data(pokemon_name)
 
-    # evoChain = []
-    # numOfEvolutions = len(chain['evolves_to'])
+    evolution_names = []
 
-    # while chain != None and hasattr(chain, 'evolves_to'):
-    #     evoChain.append(chain['species']['name'])
+    def get_evolution_names(evolution_chain):
+        """Extracts evolution names from returned data"""
+        # get current evolution name
+        evolution_names.append(evolution_chain['species']['name'])
+        # get the names of any evolutions that come after the current one
+        for evolution in evolution_chain['evolves_to']:
+            get_evolution_names(evolution)
 
-    #     if numOfEvolutions > 1:
-    #         for i in numOfEvolutions:
-    #             evoChain.append(chain['evolves_to'][i]['species']['name']);
+    get_evolution_names(evolution_chain)
 
-    # chain = chain['evolves_to'][0]['species']['name']
-    # return evoChain
+    return evolution_names
 
-    first_evol = chain['species']['name']
+
+def fetch_blurb(pokemon_name, language):
+    """Generates a random fact in the specified language about the pokemon."""
+
     try:
-        second_evol = chain['evolves_to'][0]['species']['name']
-    except IndexError:
-        second_evol = None
+        get_species_url = requests.get(
+            f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
+        data = requests.get(get_species_url).json()['flavor_text_entries']
+        blurbs = []
 
-    try:
-        third_evol = chain['evolves_to'][0]['evolves_to'][0]['species']['name']
-    except IndexError:
-        third_evol = None
+        for i in data:
+            if i['language']['name'] == language:
+                blurbs.append(i['flavor_text'])
 
-    try:
-        fourth_evol = chain['evolves_to'][0]['evolves_to'][0]['evolves_to'][0]['species']['name']
-    except IndexError:
-        fourth_evol = None
-
-    return [first_evol, second_evol, third_evol, fourth_evol]
-
-
-def fetch_blurb(pokemon_name):
-    """Generates a random fact in English from PokeApi about the pokemon."""
-
-    get_species_url = requests.get(
-        f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
-    data = requests.get(get_species_url).json()['flavor_text_entries']
-    blurbs = []
-
-    for i in data:
-        if i['language']['name'] == 'en':
-            blurbs.append(i['flavor_text'])
-
-    return random.choice(blurbs)
+        return random.choice(blurbs)
+    except:
+        return "Sorry, there was an error fetching the blurb for this pokemon."
 
 
 @app.route('/pokemon/')
-def get_poke():
+def search_poke():
     """Handle form submission; return form, showing pokemon info from submission.
     isIndex=True sets a variable so that we can pinpoint the route to only show search in nav bar if there is not already one on the page.
     """
@@ -350,17 +350,16 @@ def poke_details(pokemon_name):
 
     try:
         pokemon_data = fetch_pokemon_data(pokemon_name)
-        blurb = fetch_blurb(pokemon_name)
+        blurb = fetch_blurb(pokemon_name, 'en')
 
         evolutions_list = fetch_evolutions(pokemon_name)
-        clean_list = [i for i in evolutions_list if i != None]
-        if len(clean_list) > 1:
-            evolutions_data = [fetch_pokemon_data(i) for i in clean_list]
+        if len(evolutions_list) > 1:
+            evolutions_data = [fetch_pokemon_data(i) for i in evolutions_list]
         else:
             evolutions_data = [pokemon_data]
 
-        poke_id = pokemon_data[0]['id']
-        name = pokemon_data[1]['name']
+        poke_id = pokemon_data['id']
+        name = pokemon_data['name']
 
         check_pokemon = Pokemon.query.get(name)
 
