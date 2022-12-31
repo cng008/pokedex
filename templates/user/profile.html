@@ -7,7 +7,7 @@
         <div class="text-center">
             <img src="{{ g.user.profile_img_url }}" alt="avatar" style="height:10em;border-radius:25em;object-fit:cover;">
             <h4 id="sidebar-username" class="mt-1">@{{ g.user.username }}</h4>
-            <p class="user-location"><span class="fa fa-map-marker"></span>{% if g.user.location %} {{ g.user.location }}{% else %} somewhere{% endif %}</p>
+            <p class="user-location"><i class="fa-solid fa-map-pin"></i>{% if g.user.location %} {{ g.user.location }}{% else %} somewhere{% endif %}</p>
             {% if '/user/edit' in request.path %}
             {% else %}
             <a href="/user/edit" class="btn btn-outline-secondary btn-sm mt-2">Edit Profile</a>

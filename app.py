@@ -35,6 +35,10 @@ API_BASE_URL = 'https://pokeapi.co/api/v2'
 
 ##############################################################################
 # HOMEPAGE AND ERROR PAGES
+@app.route('/')
+def root():
+    return redirect("/1")
+
 
 @app.route('/<page>')
 def home_page(page=1):
@@ -101,15 +105,18 @@ def do_login(user):
 
 
 def do_logout():
-    """Log out user."""
+    """Log out the current user."""
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
 
 
-@app.route('/register', methods=["GET", "POST"])
+@app.route('/register', methods=["POST"])
 def create_user():
     """Handle user signup."""
+
+    if request.method != 'POST':
+        return redirect(request.referrer)
 
     if CURR_USER_KEY in session:
         flash("You're already logged in!", 'info')
@@ -123,17 +130,19 @@ def create_user():
                 username=form.username.data,
                 password=form.password.data)
             db.session.commit()
-
+            do_login(user)
+            flash("Welcome! Your account was created (-:", "success")
+            return redirect("/")
         except IntegrityError:
             form.username.errors.append('Username taken. Please pick another.')
-            return render_template('user/register.html', form=form)
-
-        do_login(user)
-        flash("Welcome! Your account was created (-:", "success")
-        return redirect("/")
-
     else:
-        return render_template('user/register.html', form=form)
+        flash("There were errors in the form.", "error")
+
+    return render_template('user/register.html', form=form)
+
+    def do_login(user):
+        """Log in the given user."""
+        session[CURR_USER_KEY] = user.username
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -227,14 +236,20 @@ def profile():
 def delete_user():
     """Delete user."""
 
+    if request.method != 'POST':
+        return redirect(request.referrer)
+
     if not g.user:
         flash("Access unauthorized.", "primary")
         return redirect("/")
 
-    do_logout()
-
-    db.session.delete(g.user)
-    db.session.commit()
+    try:
+        do_logout()
+        db.session.delete(g.user)
+        db.session.commit()
+        flash("Your account has been deleted.", "success")
+    except:
+        flash("There was an error deleting your account.", "error")
 
     return redirect("/")
 
@@ -390,28 +405,39 @@ def add_favorite(pokemon_name):
     Only allow favorite to work if a user is in the session.
     """
 
+    if request.method != 'POST':
+        return redirect(request.referrer)
+
     if CURR_USER_KEY not in session:
-        flash("Please make an account to favorite a pokémon.", "primary")
+        flash("You must be logged in to favorite a pokemon.", "primary")
         return redirect(request.referrer)
         # return redirect("/") # use this instead for testing
 
-    favorited_poke = Pokemon.query.get_or_404(pokemon_name)
-    user_favs = g.user.favorites
-
-    if favorited_poke in user_favs:
-        g.user.favorites = [fav for fav in user_favs if fav != favorited_poke]
-    else:
-        g.user.favorites.append(favorited_poke)
-
-    db.session.commit()
+    try:
+        favorited_poke = Pokemon.query.get_or_404(pokemon_name)
+        user_favs = g.user.favorites
+        if is_favorite(favorited_poke, user_favs):
+            g.user.favorites = [
+                fav for fav in user_favs if fav != favorited_poke]
+            flash(f"{pokemon_name.title()} removed from favorites.", "success")
+        else:
+            g.user.favorites.append(favorited_poke)
+            flash(f"{pokemon_name.title()} added to favorites.", "success")
+        db.session.commit()
+    except:
+        flash("There was an error updating your favorites.", "error")
 
     return redirect(request.referrer)  # https://stackoverflow.com/a/61902927
     # return redirect("/") # use this instead for testing
 
+    def is_favorite(pokemon, user_favorites):
+        """Check if a pokemon is in the user's favorites list."""
+        return pokemon in user_favorites
+
 
 ##############################################################################
 # Turn off all caching in Flask
-#   automatically close all unused/hanging connections and prevent bottleneck in your code
+#   automatically close all unused/hanging connections and prevent bottleneck in code
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
