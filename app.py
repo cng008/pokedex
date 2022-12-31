@@ -7,6 +7,7 @@ from models import db, connect_db, User, Favorite, Pokemon
 from forms import RegisterForm, LoginForm, UserEditForm
 from pokemons import all_pokemon
 from sqlalchemy.exc import IntegrityError
+import math
 import random
 
 import os
@@ -35,14 +36,31 @@ API_BASE_URL = 'https://pokeapi.co/api/v2'
 ##############################################################################
 # HOMEPAGE AND ERROR PAGES
 
-@app.route('/')
-def home_page():
+@app.route('/<page>')
+def home_page(page=1):
     """Homepage. See first 15 pokemon."""
 
-    pokemon = [i for i in requests.get(f'{API_BASE_URL}/pokemon/?limit=15').json()['results']]
-    pokemon_data = [fetch_poke(i['name']) for i in pokemon] # https://medium.com/@sergio13prez/fetching-them-all-poke-api-62ca580981a2
-    
-    return render_template('pokemon/home.html', pokemon_data=pokemon_data, all_pokemon=all_pokemon, isIndex=True)
+    limit = 15
+    offset = (int(page) - 1) * limit
+    pokemon_data = []
+
+    try:
+        res = requests.get(
+            f'{API_BASE_URL}/pokemon/?limit={limit}&offset={offset}')
+        pokemon = res.json()['results']
+        for poke in pokemon:
+            data = fetch_pokemon_data(poke['name'])
+            pokemon_data.append(data)
+    except Exception as e:
+        # Log the exception and return an empty list
+        print(f'Error fetching pokemon list: {e}')
+        pokemon_data = []
+
+    # Get the total number of pokemon
+    total_pokemon = requests.get(f'{API_BASE_URL}/pokemon/').json()['count']
+    total_pages = math.ceil(total_pokemon / limit)
+
+    return render_template('pokemon/home.html', pokemon_data=pokemon_data, all_pokemon=all_pokemon, isIndex=True, page=int(page), total_pages=int(total_pages))
 
 
 @app.errorhandler(404)
@@ -101,7 +119,7 @@ def create_user():
     if form.validate_on_submit():
         try:
             user = User.signup(
-                email=form.email.data,            
+                email=form.email.data,
                 username=form.username.data,
                 password=form.password.data)
             db.session.commit()
@@ -167,9 +185,10 @@ def user_show_favorites():
         flash("Access unauthorized. You need to login first.", "primary")
         return redirect("/")
 
-    fav_pokemon = [fetch_poke(pokemon.name) for pokemon in g.user.favorites]
+    fav_pokemon = [fetch_pokemon_data(pokemon.name)
+                   for pokemon in g.user.favorites]
 
-    return render_template('user/favorites.html', user=g.user, favorites=fav_pokemon , all_pokemon=all_pokemon)
+    return render_template('user/favorites.html', user=g.user, favorites=fav_pokemon, all_pokemon=all_pokemon)
 
 
 @app.route('/user/edit', methods=["GET", "POST"])
@@ -179,7 +198,7 @@ def profile():
     if not g.user:
         flash("Access unauthorized.", "primary")
         return redirect("/")
-    
+
     user = g.user
 
     form = UserEditForm(obj=user)
@@ -223,23 +242,29 @@ def delete_user():
 ##############################################################################
 # GENERAL POKEMON SEARCH ROUTES
 
-def fetch_poke(pokemon_name):
+def fetch_pokemon_data(pokemon_name):
     """Return {id, name, image, types, other statistics} from PokeApi for given search term."""
+    try:
+        res = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}")
+        data = res.json()
 
-    resp = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}")
-    data = resp.json()
+        id = data['id']
+        name = data['name']
+        img = data['sprites']['other']['official-artwork']['front_default']
+        pokedex_img = data['sprites']['front_default']
+        types = data['types']
+        base_xp = data['base_experience']
+        height = data['height']
+        weight = data['weight']
+        abilities = data['abilities']
+        pokedex_img_shiny = data['sprites']['front_shiny']
 
-    id = data['id']
-    name = data['name']
-    img = data['sprites']['other']['official-artwork']['front_default']
-    pokedex_img = data['sprites']['front_default']
-    types = data['types']
-    base_xp = data['base_experience']
-    height = data['height']
-    weight = data['weight']
-    abilities = data['abilities']
+        return {'id': id}, {'name': name}, {'image': img}, {'pokedex_img': pokedex_img}, {'types': types}, {'base_xp': base_xp}, {'height': height}, {'weight': weight}, {'abilities': abilities}, {'pokedex_img_shiny': pokedex_img_shiny}
 
-    return {'id':id},{'name':name},{'image':img},{'pokedex_img':pokedex_img},{'types':types},{'base_xp':base_xp},{'height':height},{'weight':weight},{'abilities':abilities}
+    except Exception as e:
+        # Log the exception and return an empty dictionary
+        print(f'Error fetching pokemon data: {e}')
+        return {}
 
 
 def fetch_evolutions(pokemon_name):
@@ -247,35 +272,52 @@ def fetch_evolutions(pokemon_name):
         Not every pokemon will have more than one evolution, so a catch/error accounts for that.
     """
 
-    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
-    get_evolution_url = requests.get(get_species_url).json()['evolution_chain']['url']
+    get_species_url = requests.get(
+        f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
+    get_evolution_url = requests.get(get_species_url).json()[
+        'evolution_chain']['url']
     chain = requests.get(get_evolution_url).json()['chain']
 
+    # evoChain = []
+    # numOfEvolutions = len(chain['evolves_to'])
+
+    # while chain != None and hasattr(chain, 'evolves_to'):
+    #     evoChain.append(chain['species']['name'])
+
+    #     if numOfEvolutions > 1:
+    #         for i in numOfEvolutions:
+    #             evoChain.append(chain['evolves_to'][i]['species']['name']);
+
+    # chain = chain['evolves_to'][0]['species']['name']
+    # return evoChain
+
     first_evol = chain['species']['name']
-    try: 
+    try:
         second_evol = chain['evolves_to'][0]['species']['name']
     except IndexError:
         second_evol = None
 
-    try: 
+    try:
         third_evol = chain['evolves_to'][0]['evolves_to'][0]['species']['name']
     except IndexError:
         third_evol = None
 
-    try: 
+    try:
         fourth_evol = chain['evolves_to'][0]['evolves_to'][0]['evolves_to'][0]['species']['name']
     except IndexError:
         fourth_evol = None
 
-    return [first_evol,second_evol,third_evol,fourth_evol]
+    return [first_evol, second_evol, third_evol, fourth_evol]
 
 
 def fetch_blurb(pokemon_name):
     """Generates a random fact in English from PokeApi about the pokemon."""
-    
-    get_species_url = requests.get(f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
+
+    get_species_url = requests.get(
+        f"{API_BASE_URL}/pokemon/{pokemon_name}").json()['species']['url']
     data = requests.get(get_species_url).json()['flavor_text_entries']
     blurbs = []
+
     for i in data:
         if i['language']['name'] == 'en':
             blurbs.append(i['flavor_text'])
@@ -291,11 +333,12 @@ def get_poke():
 
     try:
         search = request.args.get('search')
-        pokemon = fetch_poke(search.lower().replace(' ', '-'))
+        pokemon = fetch_pokemon_data(search.lower())
     except requests.exceptions.JSONDecodeError:
         return render_template('/pokemon/no-results.html', all_pokemon=all_pokemon, search=search, isIndex=True)
 
-    return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon, isIndex=True)
+    # return render_template('pokemon/results.html', pokemon=pokemon, all_pokemon=all_pokemon, isIndex=True)
+    return redirect(f'/pokemon/{search.lower()}')
 
 
 @app.route('/pokemon/<pokemon_name>')
@@ -306,13 +349,13 @@ def poke_details(pokemon_name):
     """
 
     try:
-        pokemon_data = fetch_poke(pokemon_name)
+        pokemon_data = fetch_pokemon_data(pokemon_name)
         blurb = fetch_blurb(pokemon_name)
 
         evolutions_list = fetch_evolutions(pokemon_name)
         clean_list = [i for i in evolutions_list if i != None]
         if len(clean_list) > 1:
-            evolutions_data = [fetch_poke(i) for i in clean_list]
+            evolutions_data = [fetch_pokemon_data(i) for i in clean_list]
         else:
             evolutions_data = [pokemon_data]
 
@@ -326,9 +369,10 @@ def poke_details(pokemon_name):
             db.session.add(add_pokemon)
             db.session.commit()
 
-        if g.user:        
+        if g.user:
             pokemon = (Pokemon.query.all())
-            faved_pokemon_names = [favorite.name for favorite in g.user.favorites]
+            faved_pokemon_names = [
+                favorite.name for favorite in g.user.favorites]
             return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon, favs=faved_pokemon_names)
 
         return render_template('pokemon/show.html', pokemon=pokemon_data, blurb=blurb, evolutions=evolutions_data, all_pokemon=all_pokemon)
@@ -362,7 +406,7 @@ def add_favorite(pokemon_name):
 
     db.session.commit()
 
-    return redirect(request.referrer) # https://stackoverflow.com/a/61902927
+    return redirect(request.referrer)  # https://stackoverflow.com/a/61902927
     # return redirect("/") # use this instead for testing
 
 
@@ -374,4 +418,3 @@ def add_favorite(pokemon_name):
 def shutdown_session(exception=None):
     db.session.remove()
 # https://stackoverflow.com/a/53715116
-

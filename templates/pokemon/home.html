@@ -30,6 +30,14 @@
         </div>
         {% endfor %}
     </section>
+    <div class="text-center my-3">
+        {% if page > 1 %}
+        <a class="btn btn-outline-info mx-2" href="/{{ page - 1 }}" role="button">Prev</a>
+        {% endif %}
+        
+        {% if page < total_pages %} <a class="btn btn-info" href="/{{ page + 1 }}" role="button">Next</a>
+            {% endif %}
+    </div>
 </div>
 
 {% endblock %}
