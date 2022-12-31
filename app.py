@@ -416,7 +416,7 @@ def add_favorite(pokemon_name):
     try:
         favorited_poke = Pokemon.query.get_or_404(pokemon_name)
         user_favs = g.user.favorites
-        if is_favorite(favorited_poke, user_favs):
+        if favorited_poke in user_favs:
             g.user.favorites = [
                 fav for fav in user_favs if fav != favorited_poke]
             flash(f"{pokemon_name.title()} removed from favorites.", "success")
@@ -429,10 +429,6 @@ def add_favorite(pokemon_name):
 
     return redirect(request.referrer)  # https://stackoverflow.com/a/61902927
     # return redirect("/") # use this instead for testing
-
-    def is_favorite(pokemon, user_favorites):
-        """Check if a pokemon is in the user's favorites list."""
-        return pokemon in user_favorites
 
 
 ##############################################################################
