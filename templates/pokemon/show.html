@@ -6,7 +6,7 @@
         <div class="pokemon-card card border-light">
             <div class="pokemon-id row m-4">
                 <div class="header">
-                    <img src="{{ pokemon['pokedex_img'] }}" alt="{{ pokemon['name'] }} sprite" id="sprite">
+                    <img src="{{ pokemon['pokedex_img'] }}" alt="{{ pokemon['name'] }} sprite" id="sprite" onclick="moveImage()" style="position:absolute;z-index:99;cursor:grab;">
                     <h1 class="text-center">{{ pokemon['name'].title().replace('-', ' ') }} <span class="number-prefix" style="font-family:'Courier New',Courier,monospace;color:#919191;">#{{ pokemon['id'] }}</span></h1>
                     <div id="heart">
                         <form method="POST" action="/pokemon/{{ pokemon['name'] }}/fav" id="pokemon-like">
@@ -110,5 +110,36 @@
             
         </div>
     </section>
+        
+    <script>
+        // gamified interactive sprite image
+        const img = document.getElementById('sprite')
+        // randomly generates a shiny on page load
+        if (Math.random() < 0.5) {
+            img.src = "{{ pokemon['pokedex_img'] }}"
+        } else {
+            img.src = "{{ pokemon['pokedex_img_shiny'] }}"
+            img.title = "you found a shiny!"
+        }
 
+        // pokemon moves on mouse click
+        let clicks = Math.floor(Math.random() * 5) + 1;
+        let counter = 1;
+        function moveImage() {
+            if (counter >= clicks) {
+                img.src = "https://art.ngfiles.com/thumbnails/386000/386577_full.png?f1555145704";
+                img.style.height = '100px';
+                img.title = `you caught a{{pokemon['name']}} in ${counter} tries!`
+                // img.removeEventListener("mouseout", resetImageSrc);
+                console.log(`caught {{pokemon['name']}} in ${counter} tries!`)
+            } else {
+                counter++;
+                img.style.position = 'absolute';
+                img.style.top = Math.random() * (window.innerHeight - img.clientHeight) + "px"; // random y coordinate
+                img.style.left = Math.random() * (window.innerWidth - img.clientWidth - 100) + "px"; // random x coordinate
+                img.style.transform = Math.random() < 0.5 ? "scaleX(-1)" : "scaleX(1)"; // random horizontal flip
+            }
+        }
+    </script>
+    
 {% endblock %}
