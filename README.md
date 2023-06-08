@@ -25,7 +25,7 @@
 
 ## **Live Website**
 
-### 👉[Click here to open website](https://pokedex-cng.herokuapp.com)
+### 👉[Click here to open website](https://cng-pokedex.onrender.com/)
 
 ---
 
@@ -112,4 +112,4 @@ Open the link in the terminal in any browser.
 
 ### 💻 Run Web Project
 
-[View on Heroku](https://pokedex-cng.herokuapp.com)
+[View on Render](https://cng-pokedex.onrender.com/)
