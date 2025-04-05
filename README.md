@@ -99,8 +99,8 @@ This project was made using the following technologies:
 
 ```bash
 # Clone Repository
-$ git clone https://github.com/cng008/capstone-1.git
-$ python3 -m venv venv
+$ git clone https://github.com/cng008/pokedex.git
+$ python3.10 -m venv venv
 $ source venv/bin/activate
 $ pip install -r requirements.txt
 $ flask run

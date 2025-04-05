@@ -138,7 +138,7 @@
             if (counter >= clicks) {
                 img.src = "https://art.ngfiles.com/thumbnails/386000/386577_full.png?f1555145704";
                 img.style.height = '100px';
-                img.title = `you caught a {{pokemon['name']}} in ${counter} tries!`
+                img.title = `you caught a {{pokemon['name']}} in ${counter} ${counter > 1 ? 'tries' : 'try'}!`
                 // img.removeEventListener("mouseout", resetImageSrc);
                 console.log(`caught {{pokemon['name']}} in ${counter} tries!`)
             } else {

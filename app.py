@@ -26,11 +26,19 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "shhhhhh")
 app.config['SQLALCHEMY_ECHO'] = True
 
-connect_db(app)
-db.create_all()
+try:
+    connect_db(app)
+    db.create_all()
+except Exception as e:
+    print(f"Database connection error: {e}")
 
 CURR_USER_KEY = 'username'
 API_BASE_URL = 'https://pokeapi.co/api/v2'
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
 
 
 ##############################################################################
@@ -40,12 +48,12 @@ def root():
     return redirect("/1")
 
 
-@app.route('/<page>')
+@app.route('/<int:page>')
 def home_page(page=1):
     """Homepage. See first 15 pokemon."""
 
     limit = 15
-    offset = (int(page) - 1) * limit
+    offset = (page - 1) * limit
     pokemon_data = []
 
     try:
@@ -111,12 +119,9 @@ def do_logout():
         del session[CURR_USER_KEY]
 
 
-@app.route('/register', methods=["POST"])
+@app.route('/register', methods=["GET", "POST"])
 def create_user():
     """Handle user signup."""
-
-    if request.method != 'POST':
-        return redirect(request.referrer)
 
     if CURR_USER_KEY in session:
         flash("You're already logged in!", 'info')
@@ -135,14 +140,8 @@ def create_user():
             return redirect("/")
         except IntegrityError:
             form.username.errors.append('Username taken. Please pick another.')
-    else:
-        flash("There were errors in the form.", "error")
 
     return render_template('user/register.html', form=form)
-
-    def do_login(user):
-        """Log in the given user."""
-        session[CURR_USER_KEY] = user.username
 
 
 @app.route('/login', methods=["GET", "POST"])
